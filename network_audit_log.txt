@@ -1,0 +1,27 @@
+[2026-10-08 21:15:21] <SISTEMA> Inicio del sistema Network OS.
+[2026-10-08 21:15:21] <SISTEMA> Inicializacion de las estructuras (arboles de directorios, tabla hash de usuarios, grafo de red y auditoria).
+[2026-10-08 21:15:21] <MENU> Acceso: Gestion de usuarios.
+[2026-10-08 21:15:21] <MENU> Acceso a funcionalidad pendiente: Gestion de usuarios.
+[2026-10-08 21:15:21] <MENU> Acceso a funcionalidad pendiente: Gestion de usuarios.
+[2026-10-08 21:15:21] <MENU> Acceso: Red y enrutamiento.
+[2026-10-08 21:15:21] <MENU> Acceso a funcionalidad pendiente: Red y enrutamiento.
+[2026-10-08 21:15:21] <MENU> Acceso: Gestion de archivos.
+[2026-10-08 21:15:21] <MENU> Acceso a funcionalidad pendiente: Gestion de archivos.
+[2026-10-08 21:15:21] <MENU> Acceso: Auditoria.
+[2026-10-08 21:15:21] <MENU> Consulta del registro de auditoria.
+[2026-10-08 21:15:21] <ERROR> Entrada invalida en el menu principal: 99
+[2026-10-08 21:15:21] <SISTEMA> Cierre del programa solicitado por el usuario.
+[2026-10-08 21:15:37] <SISTEMA> Inicio del sistema Network OS.
+[2026-10-08 21:15:37] <SISTEMA> Inicializacion de las estructuras (arboles de directorios, tabla hash de usuarios, grafo de red y auditoria).
+[2026-10-08 21:15:37] <SISTEMA> Cierre del programa solicitado por el usuario.
+[2026-10-08 21:17:42] <SISTEMA> Inicio del sistema Network OS.
+[2026-10-08 21:17:42] <SISTEMA> Inicializacion de las estructuras (arboles de directorios, tabla hash de usuarios, grafo de red y auditoria).
+[2026-10-08 21:17:42] <SISTEMA> Cierre del programa solicitado por el usuario.
+[2026-10-08 21:24:27] <SISTEMA> Inicio del sistema Network OS.
+[2026-10-08 21:24:27] <SISTEMA> Inicializacion de las estructuras (arboles de directorios, tabla hash de usuarios, grafo de red y auditoria).
+[2026-10-08 21:24:33] <MENU> Acceso: Gestion de archivos.
+[2026-10-08 21:24:37] <MENU> Acceso: Gestion de usuarios.
+[2026-10-08 21:24:39] <MENU> Acceso: Red y enrutamiento.
+[2026-10-08 21:24:43] <MENU> Acceso: Auditoria.
+[2026-10-08 21:24:46] <MENU> Consulta del registro de auditoria.
+[2026-10-08 21:24:53] <SISTEMA> Cierre del programa solicitado por el usuario.
