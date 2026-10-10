@@ -183,6 +183,44 @@ también se guardan en `%LOCALAPPDATA%\NetworkOS`; ambos conservan eventos entre
 ejecuciones. Estas rutas no dependen del directorio de trabajo. Cerrar sesión
 solo cambia la sesión activa y no limpia los datos del sistema.
 
+### Persistencia y ubicación de los datos
+
+En Windows, `Sistema::directorioDatosLocal()` resuelve el directorio
+`%LOCALAPPDATA%\NetworkOS` (normalmente
+`C:\Users\<usuario>\AppData\Local\NetworkOS`). El archivo `sistema.db`
+contiene el estado de servidores, directorios, archivos, contenido, nodos y
+conexiones de red. `usuarios.db` contiene las cuentas en un formato separado.
+Los registros `auditoria.log` y `network_audit_log.txt` también están en ese
+directorio. Para abrirlo desde el Explorador, escribe `%LOCALAPPDATA%\NetworkOS`
+en la barra de direcciones. No edites los archivos de datos manualmente.
+
+El estado del sistema se carga al construir `Sistema` y las operaciones de
+alta, modificación y eliminación lo guardan. El cierre de sesión solo cambia
+la sesión activa; el estado compartido se conserva al cambiar de usuario y al
+reiniciar. Los cambios del estado se escriben mediante un archivo temporal y
+reemplazo; si guardar falla, se informa el problema y se intenta revertir la
+operación en memoria.
+
+### Fase 5: diagnóstico de red y auditoría
+
+Los recorridos BFS y DFS se ejecutan sobre el grafo de servidores, no sobre el
+árbol de carpetas. El submenú **Red y enrutamiento** permite recorrer desde un
+servidor, listar servidores aislados, validar conexiones y simular ping
+dirigido entre pares. Dijkstra calcula rutas según las latencias de los
+enlaces. La auditoría registra eventos con fecha y hora en archivos de texto;
+el logger persistente usa modo append para conservar ejecuciones anteriores.
+
+### Fase 6: integración y pruebas
+
+`Sistema` coordina los módulos de servidores, árbol de archivos, usuarios,
+grafo y auditoría; `Menu` expone sus operaciones. Las pruebas de integración
+cubren estructuras, operaciones normales y errores, persistencia, diagnóstico
+de red y auditoría. El script E2E compila y conduce el menú en un directorio
+temporal aislado, reinicia el proceso y verifica que los datos y eventos se
+recuperen. Las instrucciones siguientes permiten reproducir esas
+comprobaciones; la presencia de una prueba en el repositorio no implica por sí
+sola que se haya ejecutado en cada entorno.
+
 ## Compilacion
 
 ### Compilacion manual
