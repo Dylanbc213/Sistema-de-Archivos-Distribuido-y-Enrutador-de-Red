@@ -25,3 +25,99 @@
 [2026-10-08 21:24:43] <MENU> Acceso: Auditoria.
 [2026-10-08 21:24:46] <MENU> Consulta del registro de auditoria.
 [2026-10-08 21:24:53] <SISTEMA> Cierre del programa solicitado por el usuario.
+[2026-10-09 18:34:56] <SISTEMA> Inicio del sistema Network OS.
+[2026-10-09 18:34:56] <SISTEMA> Inicializacion de las estructuras (arboles de directorios, tabla hash de usuarios, grafo de red y auditoria).
+[2026-10-09 18:34:56] <MENU> Acceso: Gestion de archivos.
+[2026-10-09 18:34:56] <MENU> Opcion: Crear servidor.
+[2026-10-09 18:34:56] <MENU> Opcion: Listar servidores.
+[2026-10-09 18:34:56] <SISTEMA> Cierre del programa solicitado por el usuario.
+[2026-10-09 18:35:05] <SISTEMA> Inicio del sistema Network OS.
+[2026-10-09 18:35:05] <SISTEMA> Inicializacion de las estructuras (arboles de directorios, tabla hash de usuarios, grafo de red y auditoria).
+[2026-10-09 18:35:05] <MENU> Acceso: Gestion de archivos.
+[2026-10-09 18:35:05] <MENU> Opcion: Crear servidor.
+[2026-10-09 18:35:05] <MENU> Opcion: Crear carpeta.
+[2026-10-09 18:35:05] <MENU> Opcion: Crear carpeta.
+[2026-10-09 18:35:05] <MENU> Opcion: Crear archivo.
+[2026-10-09 18:35:05] <MENU> Opcion: Ver arbol de directorios.
+[2026-10-09 18:35:05] <MENU> Opcion: Buscar por nombre.
+[2026-10-09 18:35:05] <MENU> Opcion: Buscar por ruta.
+[2026-10-09 18:35:05] <MENU> Opcion: Eliminar (cascada).
+[2026-10-09 18:35:05] <MENU> Opcion: Ver arbol de directorios.
+[2026-10-09 18:35:05] <SISTEMA> Cierre del programa solicitado por el usuario.
+[2026-10-09 18:37:07] <SISTEMA> Inicio del sistema Network OS.
+[2026-10-09 18:37:07] <SISTEMA> Inicializacion de las estructuras (arboles de directorios, tabla hash de usuarios, grafo de red y auditoria).
+[2026-10-09 18:37:07] <MENU> Acceso: Gestion de archivos.
+[2026-10-09 18:37:07] <MENU> Opcion: Crear servidor.
+[2026-10-09 18:37:07] <MENU> Opcion: Crear carpeta.
+[2026-10-09 18:37:07] <MENU> Opcion: Crear archivo.
+[2026-10-09 18:37:07] <MENU> Opcion: Ver arbol de directorios.
+[2026-10-09 18:37:07] <SISTEMA> Cierre del programa solicitado por el usuario.
+[2026-10-09 18:37:13] <SISTEMA> Inicio del sistema Network OS.
+[2026-10-09 18:37:13] <SISTEMA> Inicializacion de las estructuras (arboles de directorios, tabla hash de usuarios, grafo de red y auditoria).
+[2026-10-09 18:37:13] <MENU> Acceso: Gestion de archivos.
+[2026-10-09 18:37:13] <MENU> Opcion: Crear servidor.
+[2026-10-09 18:37:13] <MENU> Opcion: Crear carpeta.
+[2026-10-09 18:37:13] <MENU> Opcion: Crear archivo.
+[2026-10-09 18:37:13] <MENU> Opcion: Ver arbol de directorios.
+[2026-10-09 18:37:13] <SISTEMA> Cierre del programa solicitado por el usuario.
+[2026-10-09 18:41:43] <SISTEMA> Inicio del sistema Network OS.
+[2026-10-09 18:41:43] <SISTEMA> Inicializacion de las estructuras (arboles de directorios, tabla hash de usuarios, grafo de red y auditoria).
+[2026-10-09 18:41:43] <MENU> Acceso: Gestion de archivos.
+[2026-10-09 18:41:43] <MENU> Opcion: Crear servidor.
+[2026-10-09 18:41:43] <MENU> Opcion: Listar servidores.
+[2026-10-09 18:41:43] <MENU> Opcion: Crear carpeta.
+[2026-10-09 18:41:43] <MENU> Opcion: Crear carpeta.
+[2026-10-09 18:41:43] <MENU> Opcion: Crear archivo.
+[2026-10-09 18:41:43] <MENU> Opcion: Crear archivo.
+[2026-10-09 18:41:43] <MENU> Opcion: Buscar por nombre.
+[2026-10-09 18:41:43] <MENU> Opcion: Buscar por ruta.
+[2026-10-09 18:41:43] <MENU> Opcion: Ver arbol de directorios.
+[2026-10-09 18:41:43] <MENU> Opcion: Eliminar (cascada).
+[2026-10-09 18:41:43] <MENU> Opcion: Ver arbol de directorios.
+[2026-10-09 18:41:43] <SISTEMA> Cierre del programa solicitado por el usuario.
+[2026-10-09 18:43:39] <SISTEMA> Inicio del sistema Network OS.
+[2026-10-09 18:43:39] <SISTEMA> Inicializacion de las estructuras (arboles de directorios, tabla hash de usuarios, grafo de red y auditoria).
+[2026-10-09 18:43:39] <MENU> Acceso: Gestion de archivos.
+[2026-10-09 18:43:39] <MENU> Opcion: Crear servidor.
+[2026-10-09 18:43:39] <MENU> Opcion: Crear carpeta.
+[2026-10-09 18:43:39] <MENU> Opcion: Crear archivo.
+[2026-10-09 18:43:39] <MENU> Opcion: Buscar por nombre.
+[2026-10-09 18:43:39] <SISTEMA> Cierre del programa solicitado por el usuario.
+[2026-10-09 18:43:49] <SISTEMA> Inicio del sistema Network OS.
+[2026-10-09 18:43:49] <SISTEMA> Inicializacion de las estructuras (arboles de directorios, tabla hash de usuarios, grafo de red y auditoria).
+[2026-10-09 18:43:49] <MENU> Acceso: Gestion de archivos.
+[2026-10-09 18:43:49] <MENU> Opcion: Crear servidor.
+[2026-10-09 18:43:49] <MENU> Opcion: Crear carpeta.
+[2026-10-09 18:43:49] <MENU> Opcion: Crear archivo.
+[2026-10-09 18:43:49] <MENU> Opcion: Buscar por nombre.
+[2026-10-09 18:43:49] <SISTEMA> Cierre del programa solicitado por el usuario.
+[2026-10-09 18:43:55] <SISTEMA> Inicio del sistema Network OS.
+[2026-10-09 18:43:55] <SISTEMA> Inicializacion de las estructuras (arboles de directorios, tabla hash de usuarios, grafo de red y auditoria).
+[2026-10-09 18:43:55] <MENU> Acceso: Gestion de archivos.
+[2026-10-09 18:43:55] <MENU> Opcion: Crear servidor.
+[2026-10-09 18:43:55] <MENU> Opcion: Crear carpeta.
+[2026-10-09 18:43:55] <MENU> Opcion: Crear archivo.
+[2026-10-09 18:43:55] <MENU> Opcion: Buscar por nombre.
+[2026-10-09 18:43:55] <SISTEMA> Cierre del programa solicitado por el usuario.
+[2026-10-09 18:44:03] <SISTEMA> Inicio del sistema Network OS.
+[2026-10-09 18:44:03] <SISTEMA> Inicializacion de las estructuras (arboles de directorios, tabla hash de usuarios, grafo de red y auditoria).
+[2026-10-09 18:44:03] <MENU> Acceso: Gestion de archivos.
+[2026-10-09 18:44:03] <MENU> Opcion: Crear servidor.
+[2026-10-09 18:44:03] <MENU> Opcion: Crear carpeta.
+[2026-10-09 18:44:03] <MENU> Opcion: Crear archivo.
+[2026-10-09 18:44:03] <MENU> Opcion: Buscar por nombre.
+[2026-10-09 18:44:03] <SISTEMA> Cierre del programa solicitado por el usuario.
+[2026-10-09 18:44:51] <SISTEMA> Inicio del sistema Network OS.
+[2026-10-09 18:44:51] <SISTEMA> Inicializacion de las estructuras (arboles de directorios, tabla hash de usuarios, grafo de red y auditoria).
+[2026-10-09 18:44:51] <MENU> Acceso: Gestion de archivos.
+[2026-10-09 18:44:51] <MENU> Opcion: Crear servidor.
+[2026-10-09 18:44:51] <MENU> Opcion: Crear carpeta.
+[2026-10-09 18:44:51] <MENU> Opcion: Crear carpeta.
+[2026-10-09 18:44:51] <MENU> Opcion: Crear archivo.
+[2026-10-09 18:44:51] <MENU> Opcion: Crear archivo.
+[2026-10-09 18:44:51] <MENU> Opcion: Ver arbol de directorios.
+[2026-10-09 18:44:51] <MENU> Opcion: Buscar por nombre.
+[2026-10-09 18:44:51] <MENU> Opcion: Buscar por ruta.
+[2026-10-09 18:44:51] <MENU> Opcion: Eliminar (cascada).
+[2026-10-09 18:44:51] <MENU> Opcion: Ver arbol de directorios.
+[2026-10-09 18:44:51] <SISTEMA> Cierre del programa solicitado por el usuario.

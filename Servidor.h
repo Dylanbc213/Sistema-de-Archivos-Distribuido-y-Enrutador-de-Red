@@ -6,6 +6,10 @@
 #include <memory>
 #include <string>
 
+// Forward declaration: Archivo se referencia en crearArchivo() sin
+// necesidad de incluir su encabezado completo en este archivo.
+class Archivo;
+
 // =====================================================================
 // Servidor: nodo físico de la red.
 // =====================================================================
@@ -39,8 +43,33 @@ public:
     void setNombre(const std::string& nombre);
     void setRaiz(const std::shared_ptr<Carpeta>& nuevaRaiz);
 
-    // Utilidades
-    void mostrar() const;   // imprime el servidor y su árbol de archivos
+            // --- Utilidades ---
+    // Imprime el servidor y, debajo, su árbol de archivos.
+    void mostrar() const;
+
+    // --- Fase 2: Operaciones de sistema de archivos sobre la raíz ---
+    // Delegan en la carpeta raíz del servidor. Las rutas pueden
+    // ser absolutas ('/docs/reportes/archivo.txt') o relativas.
+
+    // Búsqueda por ruta (navegación jerárquica desde la raíz).
+    std::shared_ptr<NodoArchivo> buscarPorRuta(const std::string& ruta) const;
+
+    // Búsqueda recursiva (DFS) por nombre en todo el árbol.
+    std::shared_ptr<NodoArchivo> buscarRecursivoPorNombre(
+        const std::string& nombre) const;
+
+    // Crea una subcarpeta en la ruta indicada (crea intermedias si falta).
+    std::shared_ptr<Carpeta> crearSubdirectorio(const std::string& ruta);
+
+    // Crea un archivo en la ruta indicada (crea intermedias si falta).
+    std::shared_ptr<Archivo> crearArchivo(const std::string& ruta,
+                                          const std::string& contenido = "");
+
+    // Elimina recursivamente un nodo por ruta (cascada si es carpeta).
+    bool eliminarRecursivo(const std::string& ruta);
+
+    // Muestra el árbol de directorios a partir de la raíz.
+    void mostrarArbol() const;
 
     // Igualdad por ID (identidad del servidor en la red).
     bool operator==(const Servidor& otro) const;

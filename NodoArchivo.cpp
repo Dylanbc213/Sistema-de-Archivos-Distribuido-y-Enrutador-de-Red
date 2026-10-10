@@ -72,7 +72,14 @@ string NodoArchivo::obtenerRuta() const {
     string ruta = nombre.empty() ? "/" : nombre;
     shared_ptr<Carpeta> p = padre.lock();
     while (p) {
-        ruta = p->getNombre() + "/" + ruta;
+                string nombrePadre = p->getNombre();
+        // Si el padre es la raíz (nombre "/" o vacío), ya incluye el
+        // separador "/", así que no se añade otro para evitar "//".
+        if (nombrePadre == "/" || nombrePadre.empty()) {
+            ruta = "/" + ruta;
+        } else {
+            ruta = nombrePadre + "/" + ruta;
+        }
         p = p->getPadre();
     }
     return ruta;

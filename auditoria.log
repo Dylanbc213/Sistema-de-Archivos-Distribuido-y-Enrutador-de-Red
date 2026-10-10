@@ -1,6 +1,11 @@
-[2026-10-08 21:24:27] <SISTEMA> Network OS iniciado.
-[2026-10-08 21:24:33] <MENU> Acceso: Gestion de archivos.
-[2026-10-08 21:24:37] <MENU> Acceso: Gestion de usuarios.
-[2026-10-08 21:24:39] <MENU> Acceso: Red y enrutamiento.
-[2026-10-08 21:24:43] <MENU> Acceso: Auditoria.
-[2026-10-08 21:24:53] <SISTEMA> Network OS finalizado por el usuario.
+[2026-10-09 18:44:51] <SISTEMA> Network OS iniciado.
+[2026-10-09 18:44:51] <MENU> Acceso: Gestion de archivos.
+[2026-10-09 18:44:51] <ARBOL> Servidor #100 "prodServer" creado con su raíz.
+[2026-10-09 18:44:51] <ARBOL> Carpeta creada: '/srv/data' en servidor #100.
+[2026-10-09 18:44:51] <ARBOL> Carpeta creada: '/srv/data/backup' en servidor #100.
+[2026-10-09 18:44:51] <ARBOL> Archivo creado: '/srv/data/backup/log.txt' en servidor #100.
+[2026-10-09 18:44:51] <ARBOL> Archivo creado: '/srv/data/config.conf' en servidor #100.
+[2026-10-09 18:44:51] <ARBOL> Busqueda recursiva 'config.conf' en servidor #100.
+[2026-10-09 18:44:51] <ARBOL> Busqueda por ruta '/srv/data/backup/log.txt' en servidor #100.
+[2026-10-09 18:44:51] <ARBOL> Elemento eliminado: '/srv/data/backup' en servidor #100.
+[2026-10-09 18:44:51] <SISTEMA> Network OS finalizado por el usuario.

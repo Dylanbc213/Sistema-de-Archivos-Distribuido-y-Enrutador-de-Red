@@ -1,6 +1,8 @@
 #include "Menu.h"
 
 #include "Auditoria.h"
+#include "NodoArchivo.h"  // Fase 2: obtenerRuta(), getNombre(), esCarpeta()
+#include "Servidor.h"     // Fase 2: getId(), getNombre() en listado
 
 #include <cctype>
 #include <iostream>
@@ -56,10 +58,31 @@ int Menu::leerOpcion() const {
 
     try {
         return stoi(linea);
-    } catch (const exception&) {
+        } catch (const exception&) {
         // Fuera de rango de int.
         return -1;
     }
+}
+
+// ---------------------------------------------------------------------
+// Entrada de texto libre
+// ---------------------------------------------------------------------
+
+// Lee una línea completa de cin, la recorta de espacios en blanco al
+// inicio y al final, y la devuelve. Si la línea está vacía o solo tiene
+// espacios, devuelve una cadena vacía.
+string Menu::leerLinea() const {
+    string linea;
+    getline(cin, linea);
+
+    // Recortar espacios y tabulaciones al inicio.
+    size_t inicio = linea.find_first_not_of(" \t");
+    if (inicio == string::npos) {
+        return "";  // Línea vacía o solo espacios.
+    }
+    // Recortar espacios y tabulaciones al final.
+    size_t fin = linea.find_last_not_of(" \t");
+    return linea.substr(inicio, fin - inicio + 1);
 }
 
 // ---------------------------------------------------------------------
@@ -95,6 +118,14 @@ void Menu::mostrarMenuArchivos() const {
     cout << "\n" << SEPARADOR << "\n";
     cout << "         GESTION DE ARCHIVOS\n";
     cout << SEPARADOR << "\n";
+    cout << "  1. Crear servidor\n";
+    cout << "  2. Listar servidores\n";
+    cout << "  3. Ver arbol de directorios\n";
+    cout << "  4. Crear carpeta\n";
+    cout << "  5. Crear archivo\n";
+    cout << "  6. Buscar por nombre\n";
+    cout << "  7. Buscar por ruta\n";
+    cout << "  8. Eliminar (cascada)\n";
     cout << "  0. Volver al menu principal\n";
     cout << GUIONES << "\n";
     cout << "Seleccione una opcion: ";
@@ -146,6 +177,142 @@ void Menu::menuGestionArchivos() {
             case 0:
                 volver = true;
                 break;
+
+            case 1: {  // Crear servidor
+                logger.append("MENU", "Opcion: Crear servidor.");
+                cout << "\n  ID del servidor: ";
+                int id = leerOpcion();
+                if (id < 0) {
+                    cout << "  [!] ID invalido.\n";
+                    break;
+                }
+                cout << "  Nombre del servidor: ";
+                string nombre = leerLinea();
+                if (nombre.empty()) {
+                    cout << "  [!] El nombre no puede estar vacio.\n";
+                    break;
+                }
+                Servidor* srv = sistema.crearServidor(id, nombre);
+                if (srv) {
+                    cout << "  [+] Servidor #" << id << " \""
+                         << nombre << "\" creado.\n";
+                }
+                break;
+            }
+
+                        case 2: {  // Listar servidores
+                logger.append("MENU", "Opcion: Listar servidores.");
+                sistema.listarServidores();
+                break;
+            }
+
+            case 3: {  // Ver arbol de directorios
+                logger.append("MENU", "Opcion: Ver arbol de directorios.");
+                cout << "\n  ID del servidor: ";
+                int id = leerOpcion();
+                if (sistema.getServidor(id)) {
+                    cout << "\n";
+                    sistema.mostrarArbol(id);
+                } else {
+                    cout << "  [!] Servidor #" << id << " no existe.\n";
+                }
+                break;
+                        }
+
+            case 4: {  // Crear carpeta
+                logger.append("MENU", "Opcion: Crear carpeta.");
+                cout << "\n  ID del servidor: ";
+                int id = leerOpcion();
+                cout << "  Ruta (ej: /docs/reportes): ";
+                string ruta = leerLinea();
+                if (ruta.empty()) {
+                    cout << "  [!] La ruta no puede estar vacia.\n";
+                    break;
+                }
+                if (sistema.crearSubdirectorio(id, ruta)) {
+                    cout << "  [+] Carpeta creada: " << ruta << "\n";
+                } else {
+                    cout << "  [!] No se pudo crear la carpeta.\n";
+                }
+                break;
+            }
+
+            case 5: {  // Crear archivo
+                logger.append("MENU", "Opcion: Crear archivo.");
+                cout << "\n  ID del servidor: ";
+                int id = leerOpcion();
+                cout << "  Ruta (ej: /docs/nota.txt): ";
+                string ruta = leerLinea();
+                cout << "  Contenido (Enter para vacio): ";
+                string contenido = leerLinea();
+                if (sistema.crearArchivo(id, ruta, contenido)) {
+                    cout << "  [+] Archivo creado: " << ruta << "\n";
+                } else {
+                    cout << "  [!] No se pudo crear el archivo.\n";
+                }
+                break;
+            }
+
+            case 6: {  // Buscar por nombre (DFS)
+                logger.append("MENU", "Opcion: Buscar por nombre.");
+                cout << "\n  ID del servidor: ";
+                int id = leerOpcion();
+                cout << "  Nombre: ";
+                string nombre = leerLinea();
+                if (nombre.empty()) {
+                    cout << "  [!] El nombre no puede estar vacio.\n";
+                    break;
+                }
+                auto result = sistema.buscarRecursivoPorNombre(id, nombre);
+                if (result) {
+                    cout << "  [+] Encontrado: " << result->obtenerRuta()
+                         << " (" << (result->esCarpeta()
+                                         ? "DIR" : "FILE") << ")\n";
+                } else {
+                    cout << "  [-] No se encontro \"" << nombre << "\".\n";
+                }
+                break;
+            }
+
+            case 7: {  // Buscar por ruta
+                logger.append("MENU", "Opcion: Buscar por ruta.");
+                cout << "\n  ID del servidor: ";
+                int id = leerOpcion();
+                cout << "  Ruta (ej: /docs): ";
+                string ruta = leerLinea();
+                if (ruta.empty()) {
+                    cout << "  [!] La ruta no puede estar vacia.\n";
+                    break;
+                }
+                auto result = sistema.buscarPorRuta(id, ruta);
+                if (result) {
+                    cout << "  [+] Encontrado: " << result->getNombre()
+                         << " (" << (result->esCarpeta() ? "DIR" : "FILE")
+                         << ", " << result->obtenerTamano() << " bytes)\n";
+                } else {
+                    cout << "  [-] No se encontro \"" << ruta << "\".\n";
+                }
+                break;
+            }
+
+            case 8: {  // Eliminar (cascada)
+                logger.append("MENU", "Opcion: Eliminar (cascada).");
+                cout << "\n  ID del servidor: ";
+                int id = leerOpcion();
+                cout << "  Ruta a eliminar (ej: /docs/reportes): ";
+                string ruta = leerLinea();
+                if (ruta.empty() || ruta == "/") {
+                    cout << "  [!] No se puede eliminar la raiz.\n";
+                    break;
+                }
+                if (sistema.eliminarRecursivo(id, ruta)) {
+                    cout << "  [-] Elemento eliminado: " << ruta << "\n";
+                } else {
+                    cout << "  [!] No se pudo eliminar.\n";
+                }
+                break;
+            }
+
             default:
                 noImplementado("Gestion de archivos");
                 break;

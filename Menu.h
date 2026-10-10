@@ -40,6 +40,11 @@ private:
     // llamador la trate como opción inválida sin romper el ciclo.
     int leerOpcion() const;
 
+    // Lee una línea completa de la consola, la recorta de espacios en
+    // blanco al inicio y al final, y la devuelve. Si la línea está vacía
+    // devuelve una cadena vacía.
+    std::string leerLinea() const;
+
     // --- Submenús (puntos de entrada de cada área) -----------------
     // Cada uno mantiene su propio ciclo hasta que el usuario elige
     // volver al menú principal.

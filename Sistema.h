@@ -10,6 +10,9 @@
 // detalle de estas clases (solo las posee mediante punteros), lo que evita
 // arrastrar todas las dependencias a quien incluya "Sistema.h".
 class Servidor;
+class NodoArchivo;
+class Archivo;
+class Carpeta;
 class Usuario;
 class TablaHashUsuarios;
 class GrafoRed;
@@ -77,7 +80,43 @@ public:
     // creado (nullptr si el ID ya existía o era inválido).
     Servidor* crearServidor(int id, const std::string& nombre);
 
-    std::size_t cantidadServidores() const;
+            std::size_t cantidadServidores() const;
+
+    // Imprime una lista de todos los servidores registrados
+    // (ID, nombre y nombre de la carpeta raíz).
+    void listarServidores() const;
+
+    // Obtiene un puntero NO propietario a un servidor por su ID
+    // (nullptr si no existe).
+    Servidor* getServidor(int id) const;
+
+    // --- Fase 2: Operaciones de sistema de archivos sobre un servidor ---
+    // Todas delegan en la carpeta raíz del servidor identificado por
+    // 'servidorId'. Registran eventos en auditoría con la etiqueta "ARBOL".
+
+    // Búsqueda por ruta desde la raíz del servidor.
+    std::shared_ptr<NodoArchivo> buscarPorRuta(int servidorId,
+                                               const std::string& ruta);
+
+        // Búsqueda recursiva (DFS) por nombre en todo el árbol del servidor.
+    std::shared_ptr<NodoArchivo> buscarRecursivoPorNombre(
+        int servidorId, const std::string& nombre);
+
+    // Crea una subcarpeta en la ruta indicada del servidor
+    // (crea directorios intermedios si no existen).
+    std::shared_ptr<Carpeta> crearSubdirectorio(int servidorId,
+                                                 const std::string& ruta);
+
+    // Crea un archivo en la ruta indicada del servidor.
+    std::shared_ptr<Archivo> crearArchivo(int servidorId,
+                                           const std::string& ruta,
+                                           const std::string& contenido);
+
+    // Elimina recursivamente un nodo por ruta (cascada si es carpeta).
+    bool eliminarRecursivo(int servidorId, const std::string& ruta);
+
+    // Muestra el árbol de directorios de un servidor.
+    void mostrarArbol(int servidorId) const;
 
     // --- Tabla hash de usuarios -------------------------------------
     // Da de alta un usuario en la tabla hash y lo registra en auditoría.

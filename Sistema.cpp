@@ -1,7 +1,9 @@
 #include "Sistema.h"
 
+#include "Archivo.h"      // Fase 2: tipo Archivo en crearArchivo
 #include "Auditoria.h"
 #include "GrafoRed.h"
+#include "NodoArchivo.h"  // Fase 2: tipo NodoArchivo en búsquedas
 #include "Servidor.h"
 #include "TablaHashUsuarios.h"
 #include "Usuario.h"
@@ -68,6 +70,129 @@ Servidor* Sistema::crearServidor(int id, const string& nombre) {
 
 // Cantidad de servidores registrados.
 size_t Sistema::cantidadServidores() const { return servidores.size(); }
+
+// Obtiene un puntero no propietario a un servidor por su ID.
+Servidor* Sistema::getServidor(int id) const {
+    return buscarServidorPorId(id);
+}
+
+// Imprime una lista de todos los servidores registrados.
+void Sistema::listarServidores() const {
+    if (servidores.empty()) {
+        cout << "\n  (No hay servidores registrados.)\n";
+        return;
+    }
+    cout << "\n  Servidores (" << servidores.size() << "):\n";
+    for (const auto& srv : servidores) {
+        if (srv) {
+            cout << "    - #" << srv->getId() << " \""
+                 << srv->getNombre() << "\"\n";
+        }
+    }
+}
+
+// ---------------------------------------------------------------------
+// Fase 2: Operaciones de sistema de archivos sobre un servidor
+// ---------------------------------------------------------------------
+// Cada método localiza el servidor por ID y delega en su carpeta raíz.
+// Si el servidor no existe, registra un error en auditoría y devuelve
+// nullptr/false según corresponda.
+
+// Búsqueda por ruta desde la raíz del servidor.
+shared_ptr<NodoArchivo> Sistema::buscarPorRuta(int servidorId,
+                                               const string& ruta) {
+    Servidor* srv = buscarServidorPorId(servidorId);
+    if (!srv) {
+        auditoria->registrar("ERROR",
+            "Busqueda por ruta: servidor #" + to_string(servidorId)
+            + " no existe.");
+        return nullptr;
+    }
+    auto resultado = srv->buscarPorRuta(ruta);
+    auditoria->registrar("ARBOL", "Busqueda por ruta '" + ruta
+        + "' en servidor #" + to_string(servidorId) + ".");
+    return resultado;
+}
+
+// Búsqueda recursiva (DFS) por nombre en todo el árbol del servidor.
+shared_ptr<NodoArchivo> Sistema::buscarRecursivoPorNombre(
+    int servidorId, const string& nombre) {
+    Servidor* srv = buscarServidorPorId(servidorId);
+    if (!srv) {
+        auditoria->registrar("ERROR",
+            "Busqueda recursiva: servidor #" + to_string(servidorId)
+            + " no existe.");
+        return nullptr;
+    }
+    auto resultado = srv->buscarRecursivoPorNombre(nombre);
+    auditoria->registrar("ARBOL", "Busqueda recursiva '" + nombre
+        + "' en servidor #" + to_string(servidorId) + ".");
+    return resultado;
+}
+
+// Crea una subcarpeta (y directorios intermedios) en un servidor.
+shared_ptr<Carpeta> Sistema::crearSubdirectorio(int servidorId,
+                                                 const string& ruta) {
+    Servidor* srv = buscarServidorPorId(servidorId);
+    if (!srv) {
+        auditoria->registrar("ERROR",
+            "Crear subdirectorio: servidor #" + to_string(servidorId)
+            + " no existe.");
+        return nullptr;
+    }
+    auto resultado = srv->crearSubdirectorio(ruta);
+    if (resultado) {
+        auditoria->registrar("ARBOL", "Carpeta creada: '" + ruta
+            + "' en servidor #" + to_string(servidorId) + ".");
+    }
+    return resultado;
+}
+
+// Crea un archivo (y directorios intermedios) en un servidor.
+shared_ptr<Archivo> Sistema::crearArchivo(int servidorId,
+                                           const string& ruta,
+                                           const string& contenido) {
+    Servidor* srv = buscarServidorPorId(servidorId);
+    if (!srv) {
+        auditoria->registrar("ERROR",
+            "Crear archivo: servidor #" + to_string(servidorId)
+            + " no existe.");
+        return nullptr;
+    }
+    auto resultado = srv->crearArchivo(ruta, contenido);
+    if (resultado) {
+        auditoria->registrar("ARBOL", "Archivo creado: '" + ruta
+            + "' en servidor #" + to_string(servidorId) + ".");
+    }
+    return resultado;
+}
+
+// Elimina recursivamente un nodo por ruta (cascada si es carpeta).
+bool Sistema::eliminarRecursivo(int servidorId, const string& ruta) {
+    Servidor* srv = buscarServidorPorId(servidorId);
+    if (!srv) {
+        auditoria->registrar("ERROR",
+            "Eliminar: servidor #" + to_string(servidorId)
+            + " no existe.");
+        return false;
+    }
+    bool ok = srv->eliminarRecursivo(ruta);
+    if (ok) {
+        auditoria->registrar("ARBOL", "Elemento eliminado: '" + ruta
+            + "' en servidor #" + to_string(servidorId) + ".");
+    }
+    return ok;
+}
+
+// Muestra el árbol de directorios de un servidor.
+void Sistema::mostrarArbol(int servidorId) const {
+    const Servidor* srv = buscarServidorPorId(servidorId);
+    if (!srv) {
+        cout << "Servidor #" << servidorId << " no existe.\n";
+        return;
+    }
+    srv->mostrarArbol();
+}
 
 // ---------------------------------------------------------------------
 // Tabla hash de usuarios
