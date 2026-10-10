@@ -2,6 +2,7 @@
 
 #include "Archivo.h"      // Fase 2: tipo Archivo en crearArchivo
 #include "Auditoria.h"
+#include "LoggerAuditoria.h"   // Fase 3: auditoría persistente a disco
 #include "GrafoRed.h"
 #include "NodoArchivo.h"  // Fase 2: tipo NodoArchivo en búsquedas
 #include "Servidor.h"
@@ -17,11 +18,32 @@ using namespace std;
 // ---------------------------------------------------------------------
 
 // Crea las cuatro estructuras y deja constancia del arranque en auditoría.
-Sistema::Sistema(size_t bucketsUsuarios, const string& rutaAuditoria)
+// Si se inyecta un logger, también se appendea al archivo persistente.
+Sistema::Sistema(size_t bucketsUsuarios, const string& rutaAuditoria,
+                 LoggerAuditoria* logger)
     : usuarios(make_unique<TablaHashUsuarios>(bucketsUsuarios)),
       grafo(make_unique<GrafoRed>()),
-      auditoria(make_unique<Auditoria>(rutaAuditoria)) {
-    auditoria->registrar("SISTEMA", "Network OS iniciado.");
+      auditoria(make_unique<Auditoria>(rutaAuditoria)),
+      loggerAuditoria(logger) {
+    auditar("SISTEMA", "Network OS iniciado.");
+}
+
+// ---------------------------------------------------------------------
+// Auditoría transaccional
+// ---------------------------------------------------------------------
+
+// Helper: escribe la entrada en la traza volátil (Auditoria) y, si existe el
+// logger, la appendea de inmediato a network_audit_log.txt.
+void Sistema::auditar(const string& tipo, const string& mensaje) {
+    auditoria->registrar(tipo, mensaje);
+    if (loggerAuditoria != nullptr) {
+        loggerAuditoria->append(tipo, mensaje);
+    }
+}
+
+// Asocia dinámicamente un logger persistente (alternativa al constructor).
+void Sistema::asignarLogger(LoggerAuditoria& log) {
+    loggerAuditoria = &log;
 }
 
 // ---------------------------------------------------------------------
@@ -199,15 +221,46 @@ void Sistema::mostrarArbol(int servidorId) const {
 // ---------------------------------------------------------------------
 
 // Inserta un usuario en la tabla hash y audita la operación.
+// 'nivelPermiso' 0=Normal, 1=Admin.
 bool Sistema::registrarUsuario(int id, const string& nombre,
-                               const string& contrasena) {
-    bool ok = usuarios->insertar(Usuario(id, nombre, contrasena));
+                               const string& contrasena,
+                               int nivelPermiso) {
+    NivelPermiso permiso = (nivelPermiso == 0)
+                               ? NivelPermiso::NORMAL
+                               : NivelPermiso::ADMIN;
+    const string nivelStr = (permiso == NivelPermiso::ADMIN) ? "ADMIN" : "NORMAL";
+    bool ok = usuarios->insertar(
+        Usuario(id, nombre, contrasena, permiso));
     if (ok) {
-        auditoria->registrar("USUARIO", "Usuario \"" + nombre + "\" registrado.");
+        auditar("USUARIO",
+            "Usuario \"" + nombre + "\" registrado (id " + to_string(id)
+            + ", permiso " + nivelStr + ").");
     } else {
-        auditoria->registrar("ERROR", "Usuario \"" + nombre + "\" ya existe.");
+        auditar("ERROR",
+            "Registro fallido: el nombre \"" + nombre
+            + "\" ya esta en uso.");
     }
     return ok;
+}
+
+// ---------------------------------------------------------------------
+// Autenticación (Fase 3)
+// ---------------------------------------------------------------------
+
+// La tabla hash localiza al usuario en O(1) promedio (verificarSesion) y
+// compara la contraseña. Cada intento (éxito o fracaso) se audita en la
+// traza volátil y en network_audit_log.txt de forma automática.
+bool Sistema::iniciarSesion(const string& nombre, const string& contrasena) {
+    Usuario* u = usuarios->verificarSesion(nombre, contrasena);
+    if (u != nullptr) {
+        auditar("AUT",
+            "Inicio de sesion EXITOSO: \"" + nombre
+            + "\" (permiso " + u->getPermisoStr() + ").");
+        return true;
+    }
+    auditar("AUT",
+        "Inicio de sesion FALLIDO para: \"" + nombre + "\".");
+    return false;
 }
 
 // ---------------------------------------------------------------------

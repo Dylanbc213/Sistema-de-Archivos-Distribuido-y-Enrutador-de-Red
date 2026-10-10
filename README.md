@@ -89,6 +89,46 @@ Las rutas siguen formato Unix: `/docs/reportes/archivo.txt`. El separador es
 
 ---
 
+## Fase 3: Autenticación y tabla hash
+
+### Tabla hash (desde cero)
+
+`TablaHashUsuarios` se reescribió desde cero: **NO** usa `std::unordered_map`,
+`std::map` ni `std::hash`. La tabla principal es un **arreglo dinámico** de
+**listas simples enlazadas** (`NodoLista`), y las colisiones se resuelven por
+**encadenamiento separado** (chaining). La función de dispersión es matemática
+y propia (polinomio generador modular `h = (h*131 + c) % 1000000007`), reducida
+módulo el número de buckets. Operaciones `insertar`/`buscar`/`eliminar` en
+**O(1) promedio**; el peor caso O(n) es teórico. El destructor libera todos los
+nodos y el arreglo con `delete`/`delete[]`, **sin fugas**. El factor de carga se
+controla con `rehash()`.
+
+### Gestión de usuarios y credenciales
+
+`Usuario` almacena: `id`, `nombre` (clave de la tabla hash), `contrasena`
+(texto plano, según el alcance actual), `NivelPermiso` (`NORMAL`/`ADMIN`) y
+`servidorAsignado` (ID del servidor al que pertenece; `-1` = sin servidor).
+`Sistema::registrarUsuario(...)` inserta en la tabla hash y
+`Sistema::iniciarSesion(...)` valida las credenciales en **O(1) promedio**
+(`TablaHashUsuarios::verificarSesion` → lookup hash + `verificarCredenciales`).
+
+### Auditoría transaccional
+
+Cada **registro de usuario** y cada **intento de inicio de sesión** (éxito o
+fracaso) se escribe **automáticamente** en `network_audit_log.txt` (modo
+*append*, inmediato) mediante `LoggerAuditoria`, además de quedar en la traza
+volátil `Auditoria` (que `guardarAuditoria()` vierte a `auditoria.log` al salir).
+Formato de la línea: `[AAAA-MM-DD HH:MM:SS] <USUARIO|AUT|ERROR> detalle`.
+
+### Menú de gestión de usuarios
+
+La opción 2 del menú principal abre `GESTION DE USUARIOS` con: registrar usuario
+(ID, nombre, contraseña, nivel de permiso, servidor opcional), iniciar sesión
+(nombre + contraseña) y mostrar usuarios (volcado bucket a bucket con marcas de
+colisión).
+
+---
+
 ## Compilacion
 
 ### Compilacion manual
@@ -174,7 +214,8 @@ Todas las operaciones de arbol se registran en `auditoria.log` con la etiqueta
 - Eliminaciones en cascada
 
 El archivo `network_audit_log.txt` contiene el registro del logger de auditoria
-con eventos de nivel MENU y SISTEMA.
+persistente (modo append) con eventos de nivel MENU, SISTEMA, USUARIO y AUT
+(registro e inicio de sesión de usuarios).
 
 ---
 
@@ -188,9 +229,9 @@ con eventos de nivel MENU y SISTEMA.
 | `Servidor.h/.cpp` | Servidor con raiz `/`; delega operaciones al arbol. |
 | `Sistema.h/.cpp` | Orquestador central: servidores, usuarios, grafo, auditoria. |
 | `Menu.h/.cpp` | Interfaz de consola interactiva. |
-| `TablaHashUsuarios.h/.cpp` | Tabla hash con encadenamiento para usuarios. |
+| `TablaHashUsuarios.h/.cpp` | Tabla hash desde cero (arreglo dinámico de listas enlazadas + hash matemática propia, O(1) promedio). |
 | `GrafoRed.h/.cpp` | Grafo dirigido de topologia de red. |
-| `Usuario.h/.cpp` | Modelo de usuario. |
+| `Usuario.h/.cpp` | Modelo de usuario: credenciales, NivelPermiso y servidor asignado. |
 | `Auditoria.h/.cpp` | Registro en memoria de eventos del sistema. |
 | `LoggerAuditoria.h/.cpp` | Logger persistente a archivo de texto. |
 | `ConexionRed.h/.cpp` | Modelo de conexion de red. |

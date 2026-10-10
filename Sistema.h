@@ -17,6 +17,8 @@ class Usuario;
 class TablaHashUsuarios;
 class GrafoRed;
 class Auditoria;
+class LoggerAuditoria;   // auditoría persistente (append a network_audit_log.txt)
+
 
 // =====================================================================
 // Sistema: clase central del Network OS.
@@ -27,8 +29,8 @@ class Auditoria;
 //      servidores se guardan en un vector de std::unique_ptr, de modo que
 //      Sistema es el único dueño de cada servidor (y, en cadena, de su
 //      árbol de archivos).
-//   2. Tabla hash de usuarios: tabla propia con vector + encadenamiento,
-//      sin usar std::unordered_map.
+//   2. Tabla hash de usuarios: tabla propia con arreglo dinámico de listas
+//      enlazadas + hash matemática propia, sin usar std::unordered_map.
 //   3. Grafo de red: listas de adyacencia que referencian a los servidores
 //      por su ID y guardan la latencia de cada conexión.
 //   4. Archivo de auditoría: traza de eventos del sistema.
@@ -50,15 +52,34 @@ private:
     // 4) Auditoría.
     std::unique_ptr<Auditoria> auditoria;
 
+    // Logger de auditoría PERSISTENTE (append a network_audit_log.txt).
+    // Es NO propietario: lo inyecta main. Sirve para que el registro y el
+    // inicio de sesión de usuarios dejen constancia inmediata en disco.
+    LoggerAuditoria* loggerAuditoria;
+
     // Busca un servidor por ID. Devuelve nullptr si no existe.
     Servidor* buscarServidorPorId(int id) const;
 
+    // -----------------------------------------------------------------
+    // Auditoría transaccional (volátil + persistente)
+    // -----------------------------------------------------------------
+    // Centraliza la escritura doble: la traza volátil (Auditoria) y, si
+    // existe el logger, un append inmediato a network_audit_log.txt.
+    void auditar(const std::string& tipo, const std::string& mensaje);
+
 public:
     // Constructor: crea las estructuras con una configuración por defecto
-    // (número de buckets de la tabla hash y ruta del archivo de auditoría)
-    // y registra el evento de arranque.
+    // (número de buckets de la tabla hash, ruta del archivo de auditoría y
+    // logger persistente opcional). Registra el evento de arranque. El
+    // logger permite que la auditoría de autenticación (Fase 3) se
+    // appendee directamente a network_audit_log.txt.
     Sistema(std::size_t bucketsUsuarios = 16,
-            const std::string& rutaAuditoria = "auditoria.log");
+            const std::string& rutaAuditoria = "auditoria.log",
+            LoggerAuditoria* logger = nullptr);
+
+    // Asocia dinámicamente un logger persistente para la auditoría de
+    // autenticación (alternativa al parámetro del constructor).
+    void asignarLogger(LoggerAuditoria& log);
 
     // No se permite copiar ni mover (los unique_ptr no son copiables, y el
     // destructor se define en el .cpp). Esto permite declarar los miembros
@@ -80,7 +101,7 @@ public:
     // creado (nullptr si el ID ya existía o era inválido).
     Servidor* crearServidor(int id, const std::string& nombre);
 
-            std::size_t cantidadServidores() const;
+    std::size_t cantidadServidores() const;
 
     // Imprime una lista de todos los servidores registrados
     // (ID, nombre y nombre de la carpeta raíz).
@@ -120,9 +141,19 @@ public:
 
     // --- Tabla hash de usuarios -------------------------------------
     // Da de alta un usuario en la tabla hash y lo registra en auditoría.
-    // Devuelve false si el nombre ya existía.
+    // 'nivelPermiso' 0=Normal, 1=Admin (Normal por defecto). Devuelve false
+    // si el nombre ya existía.
     bool registrarUsuario(int id, const std::string& nombre,
-                          const std::string& contrasena);
+                          const std::string& contrasena,
+                          int nivelPermiso = 0);
+
+    // --- Autenticación (Fase 3) --------------------------------------
+    // Inicia sesión validando credenciales en O(1) promedio (búsqueda hash
+    // + verificación de contraseña). Registra automáticamente en la traza
+    // volátil y en network_audit_log.txt cada intento (éxito o fracaso).
+    // Devuelve true solo si las credenciales son válidas.
+    bool iniciarSesion(const std::string& nombre,
+                       const std::string& contrasena);
 
     // --- Grafo de red -----------------------------------------------
     // Conecta dos servidores existentes con una latencia dada.

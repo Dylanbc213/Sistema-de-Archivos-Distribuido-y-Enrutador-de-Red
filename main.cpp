@@ -24,7 +24,7 @@ int main() {
 
     // 3) Sistema gestiona servidores, usuarios, grafo y auditoria en
     //    memoria (arboles, tabla hash, grafo de red y traza volatil).
-    Sistema so;
+    Sistema so(16, "auditoria.log", &logger);
 
     // 4) Evento: estructuras internas inicializadas.
     logger.append("SISTEMA",

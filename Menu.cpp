@@ -3,6 +3,8 @@
 #include "Auditoria.h"
 #include "NodoArchivo.h"  // Fase 2: obtenerRuta(), getNombre(), esCarpeta()
 #include "Servidor.h"     // Fase 2: getId(), getNombre() en listado
+#include "TablaHashUsuarios.h"  // Fase 3: buscar()/mostrar() de usuarios
+#include "Usuario.h"            // Fase 3: Usuario* y NivelPermiso
 
 #include <cctype>
 #include <iostream>
@@ -135,6 +137,9 @@ void Menu::mostrarMenuUsuarios() const {
     cout << "\n" << SEPARADOR << "\n";
     cout << "         GESTION DE USUARIOS\n";
     cout << SEPARADOR << "\n";
+    cout << "  1. Registrar nuevo usuario\n";
+    cout << "  2. Iniciar sesion\n";
+    cout << "  3. Mostrar usuarios\n";
     cout << "  0. Volver al menu principal\n";
     cout << GUIONES << "\n";
     cout << "Seleccione una opcion: ";
@@ -329,6 +334,90 @@ void Menu::menuGestionUsuarios() {
             case 0:
                 volver = true;
                 break;
+
+            case 1: {  // Registrar nuevo usuario
+                logger.append("MENU", "Opcion: Registrar usuario.");
+                cout << "\n  ID del usuario: ";
+                int id = leerOpcion();
+                if (id < 0) {
+                    cout << "  [!] El ID no puede ser negativo.\n";
+                    break;
+                }
+                cout << "  Nombre de usuario: ";
+                string nombre = leerLinea();
+                if (nombre.empty()) {
+                    cout << "  [!] El nombre no puede estar vacio.\n";
+                    break;
+                }
+                cout << "  Contrasena: ";
+                string contra = leerLinea();
+                if (contra.empty()) {
+                    cout << "  [!] La contrasena no puede estar vacia.\n";
+                    break;
+                }
+                cout << "  Nivel de permiso (0=Normal, 1=Admin) [0]: ";
+                int permIn = leerOpcion();
+                int permiso = (permIn == 1) ? 1 : 0;
+                cout << "  ID del servidor asignado (Enter para omitir): ";
+                int srvId = leerOpcion();
+                if (srvId >= 0 && sistema.getServidor(srvId) == nullptr) {
+                    cout << "  [!] El servidor #" << srvId
+                         << " no existe; se omite la asignacion.\n";
+                    srvId = -1;
+                }
+                if (sistema.registrarUsuario(id, nombre, contra, permiso)) {
+                    cout << "  [+] Usuario \"" << nombre << "\" registrado.\n";
+                    // Asignacion opcional a un servidor existente.
+                    if (srvId >= 0) {
+                        Usuario* u = sistema.getUsuarios().buscar(nombre);
+                        if (u != nullptr) {
+                            u->setServidorAsignado(srvId);
+                            sistema.getAuditoria().registrar(
+                                "USUARIO", "Usuario \"" + nombre
+                                + "\" asignado a servidor #"
+                                + to_string(srvId) + ".");
+                            logger.append("USUARIO", "Usuario \"" + nombre
+                                + "\" asignado a servidor #"
+                                + to_string(srvId) + ".");
+                        }
+                    }
+                } else {
+                    cout << "  [!] No se pudo registrar el usuario "
+                            "(nombre duplicado).\n";
+                }
+                break;
+            }
+
+            case 2: {  // Iniciar sesion
+                logger.append("MENU", "Opcion: Iniciar sesion.");
+                cout << "\n  Nombre de usuario: ";
+                string nombre = leerLinea();
+                if (nombre.empty()) {
+                    cout << "  [!] El nombre no puede estar vacio.\n";
+                    break;
+                }
+                cout << "  Contrasena: ";
+                string contra = leerLinea();
+                if (contra.empty()) {
+                    cout << "  [!] La contrasena no puede estar vacia.\n";
+                    break;
+                }
+                if (sistema.iniciarSesion(nombre, contra)) {
+                    cout << "  [+] Bienvenido, \"" << nombre
+                         << "\". Sesion iniciada.\n";
+                } else {
+                    cout << "  [!] Credenciales invalidas o usuario "
+                            "inexistente.\n";
+                }
+                break;
+            }
+
+            case 3: {  // Mostrar usuarios
+                logger.append("MENU", "Opcion: Mostrar usuarios.");
+                sistema.getUsuarios().mostrar();
+                break;
+            }
+
             default:
                 noImplementado("Gestion de usuarios");
                 break;
