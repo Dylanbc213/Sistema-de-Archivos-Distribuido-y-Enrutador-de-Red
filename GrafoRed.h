@@ -20,8 +20,24 @@
 // servidores únicamente por su ID y guarda su nombre para poder
 // imprimirse. Así convive con cualquier esquema de propiedad.
 //
-// Dijkstra, BFS y DFS se implementarán en fases posteriores; aquí solo se
-// construye y consulta la topología.
+// =====================================================================
+// Resultado del enrutamiento Dijkstra
+// =====================================================================
+// Almacena el camino óptimo calculado y su costo total (latencia en ms).
+// 'camino' contiene los IDs de los servidores desde el origen hasta el
+// destino (ambos inclusive). 'existeCamino' indica si se encontró ruta
+// conectando origen y destino.
+struct RutaOptima {
+    std::vector<int> camino;     // IDs: origen -> ... -> destino
+    int latenciaTotal;           // suma de latencias en milisegundos
+    bool existeCamino;           // true si origen y destino están conectados
+
+    RutaOptima()
+        : latenciaTotal(0), existeCamino(false) {}
+    RutaOptima(std::vector<int> c, int lat, bool existe)
+        : camino(std::move(c)), latenciaTotal(lat), existeCamino(existe) {}
+};
+
 struct Arista {
     int destinoId;   // ID del servidor vecino
     int latencia;    // latencia del enlace en milisegundos
@@ -59,17 +75,33 @@ public:
     // Elimina el enlace origen -> destino.
     bool eliminarArista(int origenId, int destinoId);
 
-    // Consultas.
+        // Consultas.
     bool existeServidor(int id) const;
     std::size_t cantidadServidores() const;
-    std::size_t cantidadAristas() const;
+    std::size_t cantidadAristas() const;  // total de enlaces registrados
 
     // Devuelve la lista de adyacencia (vecinos + latencia) de un servidor.
     // El vector está vacío si el servidor no existe.
     const std::vector<Arista>* vecinos(int id) const;
 
-    // Latencia del enlace origen -> destino, o -1 si no existe.
+        // Latencia del enlace origen -> destino, o -1 si no existe.
     int latenciaEntre(int origenId, int destinoId) const;
+
+    // Devuelve el nombre de un servidor por su ID, o "(sin nombre)" si
+    // no existe. Útil para imprimir caminos de Dijkstra sin depender
+    // de la clase Servidor.
+    std::string nombreDe(int id) const;
+
+    // -----------------------------------------------------------------
+    // Fase 4: Enrutamiento inteligente (Dijkstra)
+    // -----------------------------------------------------------------
+    // Calcula la ruta de mínima latencia entre origen y destino usando
+    // el algoritmo de Dijkstra sobre listas de adyacencia dirigidas.
+    //
+    // Devuelve un RutaOptima con el camino (IDs) y la latencia total.
+    // Si origen o destino no existen, o no hay ruta entre ambos,
+    // 'existeCamino' será false y 'camino' estará vacío.
+    RutaOptima dijkstra(int origenId, int destinoId) const;
 
     // Imprime la lista de adyacencia del grafo completo.
     void mostrar() const;

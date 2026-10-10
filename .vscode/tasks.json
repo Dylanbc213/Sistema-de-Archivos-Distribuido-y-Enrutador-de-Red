@@ -1,0 +1,37 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build NetworkOS",
+            "type": "shell",
+            "command": "g++",
+            "args": [
+                "-std=c++17",
+                "-Wall",
+                "-Wextra",
+                "-O2",
+                "main.cpp",
+                "Archivo.cpp",
+                "Auditoria.cpp",
+                "Carpeta.cpp",
+                "ConexionRed.cpp",
+                "GrafoRed.cpp",
+                "LoggerAuditoria.cpp",
+                "Menu.cpp",
+                "NodoArchivo.cpp",
+                "Servidor.cpp",
+                "Sistema.cpp",
+                "TablaHashUsuarios.cpp",
+                "Usuario.cpp",
+                "-o",
+                "NetworkOS.exe"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": ["$gcc"],
+            "detail": "Compilacion manual con g++ -std=c++17"
+        }
+    ]
+}

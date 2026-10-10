@@ -7,6 +7,7 @@
 #include "Usuario.h"            // Fase 3: Usuario* y NivelPermiso
 
 #include <cctype>
+#include <climits>
 #include <iostream>
 #include <string>
 
@@ -38,8 +39,15 @@ Menu::Menu(Sistema& s, LoggerAuditoria& log) : sistema(s), logger(log) {}
 // consumir la línea entera y no dejar residuos que ensucien la siguiente
 // lectura.
 int Menu::leerOpcion() const {
-    string linea;
+        string linea;
     getline(cin, linea);
+
+    // Detecta EOF: cuando no hay más entrada disponible en stdin (p. ej.,
+    // entrada redirigida agotada). Evita bucles infinitos devolviendo
+    // INT_MIN como sentinela para que los llamadores cierren el programa.
+    if (cin.eof() && linea.empty()) {
+        return INT_MIN;
+    }
 
     // Descarta espacios alrededor de la entrada.
     size_t inicio = linea.find_first_not_of(" \t");
@@ -178,6 +186,10 @@ void Menu::menuGestionArchivos() {
     while (!volver) {
         mostrarMenuArchivos();
         int opcion = leerOpcion();
+        if (opcion == INT_MIN) {
+            volver = true;
+            break;
+        }
         switch (opcion) {
             case 0:
                 volver = true;
@@ -330,6 +342,10 @@ void Menu::menuGestionUsuarios() {
     while (!volver) {
         mostrarMenuUsuarios();
         int opcion = leerOpcion();
+        if (opcion == INT_MIN) {
+            volver = true;
+            break;
+        }
         switch (opcion) {
             case 0:
                 volver = true;
@@ -430,6 +446,10 @@ void Menu::menuRedEnrutamiento() {
     while (!volver) {
         mostrarMenuRed();
         int opcion = leerOpcion();
+        if (opcion == INT_MIN) {
+            volver = true;
+            break;
+        }
         switch (opcion) {
             case 0:
                 volver = true;
@@ -446,6 +466,10 @@ void Menu::menuAuditoria() {
     while (!volver) {
         mostrarMenuAuditoria();
         int opcion = leerOpcion();
+        if (opcion == INT_MIN) {
+            volver = true;
+            break;
+        }
         switch (opcion) {
             case 1:
                 logger.append("MENU", "Consulta del registro de auditoria.");
@@ -470,6 +494,13 @@ void Menu::ejecutar() {
     while (!salir) {
         mostrarMenuPrincipal();
         int opcion = leerOpcion();
+
+        if (opcion == INT_MIN) {
+            salir = true;
+            cout << "\nEntrada agotada. Cerrando Network OS...\n";
+            logger.append("SISTEMA", "Cierre: entrada EOF detectada.");
+            break;
+        }
 
         switch (opcion) {
             case 1:

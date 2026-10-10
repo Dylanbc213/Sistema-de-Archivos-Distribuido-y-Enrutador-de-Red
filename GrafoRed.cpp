@@ -1,5 +1,7 @@
 #include "GrafoRed.h"
 
+#include <algorithm>  // reverse
+#include <climits>    // INT_MAX
 #include <iostream>
 
 using namespace std;
@@ -143,6 +145,118 @@ int GrafoRed::latenciaEntre(int origenId, int destinoId) const {
 // ---------------------------------------------------------------------
 // Visualización
 // ---------------------------------------------------------------------
+
+// Devuelve el nombre de un servidor por su ID, o "(sin nombre)" si no existe.
+string GrafoRed::nombreDe(int id) const {
+    auto it = nombres.find(id);
+    if (it != nombres.end()) {
+        return it->second;
+    }
+    return "(sin nombre)";
+}
+
+// ---------------------------------------------------------------------
+// Fase 4: Enrutamiento inteligente (Dijkstra)
+// ---------------------------------------------------------------------
+
+// Calcula la ruta de mínima latencia entre origen y destino usando
+// el algoritmo de Dijkstra sobre listas de adyacencia dirigidas.
+RutaOptima GrafoRed::dijkstra(int origenId, int destinoId) const {
+    RutaOptima vacia;
+    if (!existeServidor(origenId) || !existeServidor(destinoId)) {
+        return vacia;
+    }
+    if (origenId == destinoId) {
+        vacia.camino.push_back(origenId);
+        vacia.latenciaTotal = 0;
+        vacia.existeCamino = true;
+        return vacia;
+    }
+
+    // Distancias mínimas conocidas (inicial: infinito).
+    map<int, int> distancia;
+    // Nodo predecesor en el camino óptimo.
+    map<int, int> predecesor;
+    // Conjunto de nodos cuya distancia definitiva ya se conoció.
+    map<int, bool> visitado;
+
+    for (const auto& par : adyacencia) {
+        distancia[par.first] = INT_MAX;
+        visitado[par.first] = false;
+    }
+    distancia[origenId] = 0;
+
+    // Dijkstra clásico: en cada paso elige el nodo no visitado con menor
+    // distancia conocida y relaja sus aristas salientes.
+    // Complejidad O(V^2) con búsqueda lineal (suficiente para este simulador).
+    int nodoActual = origenId;
+    while (true) {
+        // Marcar nodo actual como visitado.
+        visitado[nodoActual] = true;
+
+        // Relajar aristas salientes del nodo actual.
+        const vector<Arista>* vecinosActual = vecinos(nodoActual);
+        if (vecinosActual != nullptr) {
+            for (const Arista& arista : *vecinosActual) {
+                int v = arista.destinoId;
+                int peso = arista.latencia;
+                if (visitado[v]) {
+                    continue;
+                }
+                // Evitar overflow: solo relajar si distancia[nodoActual] no es INT_MAX.
+                if (distancia[nodoActual] != INT_MAX) {
+                    int nuevaDistancia = distancia[nodoActual] + peso;
+                    if (nuevaDistancia < distancia[v]) {
+                        distancia[v] = nuevaDistancia;
+                        predecesor[v] = nodoActual;
+                    }
+                }
+            }
+        }
+
+        // Elegir el siguiente nodo no visitado con la distancia mínima.
+        int mejorDistancia = INT_MAX;
+        int siguienteNodo = -1;
+        for (const auto& par : distancia) {
+            int id = par.first;
+            if (!visitado[id] && par.second < mejorDistancia) {
+                mejorDistancia = par.second;
+                siguienteNodo = id;
+            }
+        }
+
+        // Si no quedan nodos alcanzables por explorar, terminar.
+        if (siguienteNodo == -1 || distancia[nodoActual] == INT_MAX) {
+            break;
+        }
+        nodoActual = siguienteNodo;
+
+        // Optimización: si llegamos al destino, podemos detenernos.
+        if (nodoActual == destinoId) {
+            break;
+        }
+    }
+
+    // Reconstruir el camino desde destino hasta origen.
+    if (!visitado[destinoId] || distancia[destinoId] == INT_MAX) {
+        return vacia;  // No hay ruta.
+    }
+
+    vector<int> camino;
+    int actual = destinoId;
+    while (actual != origenId) {
+        camino.push_back(actual);
+        auto it = predecesor.find(actual);
+        if (it == predecesor.end()) {
+            return vacia;  // Camino roto (no debería ocurrir).
+        }
+        actual = it->second;
+    }
+    camino.push_back(origenId);
+    reverse(camino.begin(), camino.end());
+
+    return RutaOptima(camino, distancia[destinoId], true);
+}
 
 // Imprime cada servidor con sus conexiones salientes y sus latencias.
 void GrafoRed::mostrar() const {

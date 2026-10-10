@@ -122,7 +122,7 @@ void Sistema::listarServidores() const {
 
 // Búsqueda por ruta desde la raíz del servidor.
 shared_ptr<NodoArchivo> Sistema::buscarPorRuta(int servidorId,
-                                               const string& ruta) {
+                                               const string& ruta) const {
     Servidor* srv = buscarServidorPorId(servidorId);
     if (!srv) {
         auditoria->registrar("ERROR",
@@ -138,7 +138,7 @@ shared_ptr<NodoArchivo> Sistema::buscarPorRuta(int servidorId,
 
 // Búsqueda recursiva (DFS) por nombre en todo el árbol del servidor.
 shared_ptr<NodoArchivo> Sistema::buscarRecursivoPorNombre(
-    int servidorId, const string& nombre) {
+    int servidorId, const string& nombre) const {
     Servidor* srv = buscarServidorPorId(servidorId);
     if (!srv) {
         auditoria->registrar("ERROR",
@@ -312,6 +312,121 @@ void Sistema::mostrarResumen() const {
     cout << "\nEventos de auditoría: " << auditoria->cantidadEventos() << "\n";
     cout << "=================================\n";
 }
+
+// ---------------------------------------------------------------------
+// Grafo de red (Fase 4: enrutamiento inteligente)
+// ---------------------------------------------------------------------
+
+// Registra un servidor existente como nodo del grafo de red.
+bool Sistema::agregarServidorRed(int id, const string& nombre) {
+    if (!buscarServidorPorId(id)) {
+        auditoria->registrar("ERROR",
+            "agregarServidorRed: servidor #" + to_string(id)
+            + " no existe en el sistema.");
+        return false;
+    }
+    bool ok = grafo->agregarServidor(id, nombre);
+    if (ok) {
+        auditar("RED", "Servidor #" + to_string(id)
+            + " \"" + nombre + "\" registrado en el grafo de red.");
+    }
+    return ok;
+}
+
+// Añade un enlace dirigido origen -> destino con la latencia dada.
+bool Sistema::agregarConexionRed(int origenId, int destinoId, int latencia) {
+    bool ok = grafo->agregarArista(origenId, destinoId, latencia);
+    if (ok) {
+        auditar("RED", "Conexión #" + to_string(origenId) + " -> #"
+            + to_string(destinoId) + " (" + to_string(latencia) + " ms) agregada.");
+    }
+    return ok;
+}
+
+// Elimina un servidor del grafo de red (y todas las aristas que referencian).
+bool Sistema::eliminarServidor(int id) {
+    bool ok = grafo->eliminarServidor(id);
+    if (ok) {
+        auditar("RED", "Servidor #" + to_string(id) + " eliminado del grafo de red.");
+    }
+    return ok;
+}
+
+// Elimina un enlace dirigido origen -> destino del grafo.
+bool Sistema::eliminarConexion(int origenId, int destinoId) {
+    bool ok = grafo->eliminarArista(origenId, destinoId);
+    if (ok) {
+        auditar("RED", "Conexión #" + to_string(origenId) + " -> #"
+            + to_string(destinoId) + " eliminada.");
+    }
+    return ok;
+}
+
+// Calcula la ruta óptima (Dijkstra) entre dos servidores y la registra.
+RutaOptima Sistema::calcularRutaOptima(int origenId, int destinoId) {
+    RutaOptima ruta = grafo->dijkstra(origenId, destinoId);
+    if (ruta.existeCamino) {
+        auditar("RED", "Ruta optima #" + to_string(origenId) + " -> #"
+            + to_string(destinoId) + " calculada (latencia total: "
+            + to_string(ruta.latenciaTotal) + " ms).");
+    } else {
+        auditar("RED", "No se encontro ruta entre #" + to_string(origenId)
+            + " y #" + to_string(destinoId) + ".");
+    }
+    return ruta;
+}
+
+// Ejecuta Dijkstra y devuelve una descripción legible del camino.
+string Sistema::rutearDijkstra(int origenId, int destinoId) {
+    RutaOptima ruta = calcularRutaOptima(origenId, destinoId);
+    if (!ruta.existeCamino) {
+        return "No hay ruta entre #" + to_string(origenId)
+            + " y #" + to_string(destinoId) + ".";
+    }
+    string descripcion;
+    for (size_t i = 0; i < ruta.camino.size(); ++i) {
+        if (i > 0) {
+            descripcion += " -> ";
+        }
+        descripcion += "[" + to_string(ruta.camino[i]) + "] "
+            + grafo->nombreDe(ruta.camino[i]);
+    }
+    descripcion += " (latencia total: " + to_string(ruta.latenciaTotal) + " ms)";
+    return descripcion;
+}
+
+// Muestra el grafo de red completo.
+void Sistema::mostrarGrafo() const {
+    grafo->mostrar();
+}
+
+// ---------------------------------------------------------------------
+// Acceso a las estructuras (const)
+// ---------------------------------------------------------------------
+
+const GrafoRed& Sistema::getGrafo() const { return *grafo; }
+
+// Devuelve el nombre de un servidor por su ID.
+string Sistema::nombreDeServidor(int id) const {
+    Servidor* srv = buscarServidorPorId(id);
+    if (srv) {
+        return srv->getNombre();
+    }
+    // Si no está en el árbol de servidores, intenta el grafo.
+    if (grafo && grafo->existeServidor(id)) {
+        return grafo->nombreDe(id);
+    }
+    return "(sin nombre)";
+}
+
+// Devuelve la cantidad total de aristas en el grafo de red.
+size_t Sistema::cantidadAristas() const {
+    return grafo->cantidadAristas();
+}
+
+// ---------------------------------------------------------------------
+// Presentación
+// ---------------------------------------------------------------------
 
 // Vuelca la auditoría al archivo configurado.
 bool Sistema::guardarAuditoria() const { return auditoria->guardar(); }
