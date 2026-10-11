@@ -29,12 +29,12 @@
 // conectando origen y destino.
 struct RutaOptima {
     std::vector<int> camino;     // IDs: origen -> ... -> destino
-    int latenciaTotal;           // suma de latencias en milisegundos
+    long long latenciaTotal;     // suma de latencias en milisegundos
     bool existeCamino;           // true si origen y destino están conectados
 
     RutaOptima()
         : latenciaTotal(0), existeCamino(false) {}
-    RutaOptima(std::vector<int> c, int lat, bool existe)
+    RutaOptima(std::vector<int> c, long long lat, bool existe)
         : camino(std::move(c)), latenciaTotal(lat), existeCamino(existe) {}
 };
 
@@ -79,6 +79,7 @@ public:
     bool existeServidor(int id) const;
     std::size_t cantidadServidores() const;
     std::size_t cantidadAristas() const;  // total de enlaces registrados
+    std::vector<int> idsServidores() const;
 
     // Devuelve la lista de adyacencia (vecinos + latencia) de un servidor.
     // El vector está vacío si el servidor no existe.
@@ -102,6 +103,12 @@ public:
     // Si origen o destino no existen, o no hay ruta entre ambos,
     // 'existeCamino' será false y 'camino' estará vacío.
     RutaOptima dijkstra(int origenId, int destinoId) const;
+
+    // Fase 5: recorridos y diagnostico de conectividad.
+    std::vector<int> recorridoBFS(int inicioId) const;
+    std::vector<int> recorridoDFS(int inicioId) const;
+    std::vector<int> servidoresAislados() const;
+    std::vector<std::string> validarConexiones() const;
 
     // Imprime la lista de adyacencia del grafo completo.
     void mostrar() const;

@@ -92,8 +92,16 @@ TablaHashUsuarios::NodoLista* TablaHashUsuarios::buscarNodo(
 // presentes para mantener la unicidad de la clave.
 bool TablaHashUsuarios::insertar(const Usuario& usuario) {
     const string& nombre = usuario.getNombre();
+    if (usuario.getId() < 0) {
+        cerr << "[TablaHash] No se puede insertar un ID negativo.\n";
+        return false;
+    }
     if (nombre.empty()) {
         cerr << "[TablaHash] No se puede insertar un usuario sin nombre.\n";
+        return false;
+    }
+    if (!usuario.tieneContrasenaValida()) {
+        cerr << "[TablaHash] No se puede insertar una credencial no derivada.\n";
         return false;
     }
     size_t idx = indiceDe(nombre);
@@ -104,6 +112,11 @@ bool TablaHashUsuarios::insertar(const Usuario& usuario) {
                  << "'. No se inserto.\n";
             return false;
         }
+    }
+    if (contieneId(usuario.getId())) {
+        cerr << "[TablaHash] Ya existe el ID de usuario #" << usuario.getId()
+             << ". No se inserto.\n";
+        return false;
     }
         // Inserta en cabeza de la lista del bucket (encadenamiento).
     buckets[idx] = new NodoLista(usuario, buckets[idx]);
@@ -192,6 +205,36 @@ bool TablaHashUsuarios::contiene(const string& nombre) const {
         }
     }
     return false;
+}
+
+// La tabla se indexa por nombre; la unicidad del ID se comprueba recorriendo
+// los buckets para mantener ambas claves unicas sin duplicar almacenamiento.
+bool TablaHashUsuarios::contieneId(int id) const {
+    for (size_t i = 0; i < numBuckets_; ++i) {
+        for (NodoLista* nodo = buckets[i]; nodo != nullptr; nodo = nodo->siguiente) {
+            if (nodo->dato.getId() == id) return true;
+        }
+    }
+    return false;
+}
+
+size_t TablaHashUsuarios::cantidadAdministradores() const {
+    size_t total = 0;
+    for (size_t i = 0; i < numBuckets_; ++i) {
+        for (NodoLista* nodo = buckets[i]; nodo != nullptr; nodo = nodo->siguiente) {
+            if (nodo->dato.esAdmin()) ++total;
+        }
+    }
+    return total;
+}
+
+vector<Usuario> TablaHashUsuarios::obtenerTodos() const {
+    vector<Usuario> usuarios;
+    usuarios.reserve(cantidad);
+    for (size_t i = 0; i < numBuckets_; ++i)
+        for (NodoLista* nodo = buckets[i]; nodo != nullptr; nodo = nodo->siguiente)
+            usuarios.push_back(nodo->dato);
+    return usuarios;
 }
 
 // ---------------------------------------------------------------------

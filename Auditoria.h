@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <cstddef>
 
 // =====================================================================
 // Auditoria: registro de eventos del Network OS.
@@ -26,6 +27,8 @@ private:
 
     // Nombre del archivo destino para guardar().
     std::string rutaArchivo;
+    mutable std::size_t eventosPersistidos;
+    mutable std::string rutaPersistida;
 
     // Genera la marca de tiempo actual con formato legible.
     std::string marcaTiempoActual() const;
@@ -45,8 +48,8 @@ public:
     // Cambia la ruta del archivo de volcado.
     void setRutaArchivo(const std::string& ruta);
 
-    // Escribe todos los eventos en el archivo de texto indicado. Devuelve
-    // false si no se pudo abrir el archivo.
+    // Añade los eventos nuevos al archivo, conservando ejecuciones previas.
+    // Devuelve false si no se pudo abrir o escribir el archivo.
     bool guardar() const;
     bool guardar(const std::string& ruta) const;
 

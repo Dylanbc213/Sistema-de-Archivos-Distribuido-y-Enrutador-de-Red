@@ -3,6 +3,8 @@
 #include <algorithm>  // reverse
 #include <climits>    // INT_MAX
 #include <iostream>
+#include <queue>
+#include <set>
 
 using namespace std;
 
@@ -75,6 +77,10 @@ bool GrafoRed::agregarArista(int origenId, int destinoId, int latencia) {
         cerr << "[GrafoRed] La latencia no puede ser negativa. No se agregó.\n";
         return false;
     }
+    if (origenId == destinoId) {
+        cerr << "[GrafoRed] No se permiten conexiones de un servidor consigo mismo.\n";
+        return false;
+    }
     if (existeArista(origenId, destinoId)) {
         cerr << "[GrafoRed] Ya existe el enlace " << origenId << " -> "
              << destinoId << ".\n";
@@ -109,6 +115,12 @@ bool GrafoRed::existeServidor(int id) const {
 }
 
 std::size_t GrafoRed::cantidadServidores() const { return adyacencia.size(); }
+
+vector<int> GrafoRed::idsServidores() const {
+    vector<int> ids;
+    for (const auto& nodo : adyacencia) ids.push_back(nodo.first);
+    return ids;
+}
 
 // Cuenta el total de aristas sumando el tamaño de todas las listas.
 std::size_t GrafoRed::cantidadAristas() const {
@@ -174,14 +186,14 @@ RutaOptima GrafoRed::dijkstra(int origenId, int destinoId) const {
     }
 
     // Distancias mínimas conocidas (inicial: infinito).
-    map<int, int> distancia;
+    map<int, long long> distancia;
     // Nodo predecesor en el camino óptimo.
     map<int, int> predecesor;
     // Conjunto de nodos cuya distancia definitiva ya se conoció.
     map<int, bool> visitado;
 
     for (const auto& par : adyacencia) {
-        distancia[par.first] = INT_MAX;
+        distancia[par.first] = LLONG_MAX;
         visitado[par.first] = false;
     }
     distancia[origenId] = 0;
@@ -203,9 +215,10 @@ RutaOptima GrafoRed::dijkstra(int origenId, int destinoId) const {
                 if (visitado[v]) {
                     continue;
                 }
-                // Evitar overflow: solo relajar si distancia[nodoActual] no es INT_MAX.
-                if (distancia[nodoActual] != INT_MAX) {
-                    int nuevaDistancia = distancia[nodoActual] + peso;
+                // LLONG_MAX representa infinito; evita desbordar al sumar latencias.
+                if (distancia[nodoActual] != LLONG_MAX &&
+                    distancia[nodoActual] <= LLONG_MAX - peso) {
+                    long long nuevaDistancia = distancia[nodoActual] + peso;
                     if (nuevaDistancia < distancia[v]) {
                         distancia[v] = nuevaDistancia;
                         predecesor[v] = nodoActual;
@@ -215,7 +228,7 @@ RutaOptima GrafoRed::dijkstra(int origenId, int destinoId) const {
         }
 
         // Elegir el siguiente nodo no visitado con la distancia mínima.
-        int mejorDistancia = INT_MAX;
+        long long mejorDistancia = LLONG_MAX;
         int siguienteNodo = -1;
         for (const auto& par : distancia) {
             int id = par.first;
@@ -226,19 +239,18 @@ RutaOptima GrafoRed::dijkstra(int origenId, int destinoId) const {
         }
 
         // Si no quedan nodos alcanzables por explorar, terminar.
-        if (siguienteNodo == -1 || distancia[nodoActual] == INT_MAX) {
+        if (siguienteNodo == -1 || distancia[nodoActual] == LLONG_MAX) {
             break;
         }
         nodoActual = siguienteNodo;
 
         // Optimización: si llegamos al destino, podemos detenernos.
-        if (nodoActual == destinoId) {
-            break;
-        }
+        // La siguiente iteracion marca el destino como visitado antes de
+        // reconstruir la ruta.
     }
 
     // Reconstruir el camino desde destino hasta origen.
-    if (!visitado[destinoId] || distancia[destinoId] == INT_MAX) {
+    if (!visitado[destinoId] || distancia[destinoId] == LLONG_MAX) {
         return vacia;  // No hay ruta.
     }
 
@@ -256,6 +268,94 @@ RutaOptima GrafoRed::dijkstra(int origenId, int destinoId) const {
     reverse(camino.begin(), camino.end());
 
     return RutaOptima(camino, distancia[destinoId], true);
+}
+
+// Recorrido en anchura desde un servidor existente.
+vector<int> GrafoRed::recorridoBFS(int inicioId) const {
+    vector<int> recorrido;
+    if (!existeServidor(inicioId)) return recorrido;
+
+    map<int, bool> visitado;
+    queue<int> pendientes;
+    visitado[inicioId] = true;
+    pendientes.push(inicioId);
+    while (!pendientes.empty()) {
+        int actual = pendientes.front();
+        pendientes.pop();
+        recorrido.push_back(actual);
+        const vector<Arista>* lista = vecinos(actual);
+        if (!lista) continue;
+        for (const Arista& arista : *lista) {
+            if (existeServidor(arista.destinoId) && !visitado[arista.destinoId]) {
+                visitado[arista.destinoId] = true;
+                pendientes.push(arista.destinoId);
+            }
+        }
+    }
+    return recorrido;
+}
+
+// Recorrido en profundidad iterativo desde un servidor existente.
+vector<int> GrafoRed::recorridoDFS(int inicioId) const {
+    vector<int> recorrido;
+    if (!existeServidor(inicioId)) return recorrido;
+
+    map<int, bool> visitado;
+    vector<int> pendientes(1, inicioId);
+    while (!pendientes.empty()) {
+        int actual = pendientes.back();
+        pendientes.pop_back();
+        if (visitado[actual]) continue;
+        visitado[actual] = true;
+        recorrido.push_back(actual);
+        const vector<Arista>* lista = vecinos(actual);
+        if (!lista) continue;
+        // Se apilan en orden inverso para respetar el orden de adyacencia.
+        for (auto it = lista->rbegin(); it != lista->rend(); ++it) {
+            if (existeServidor(it->destinoId) && !visitado[it->destinoId])
+                pendientes.push_back(it->destinoId);
+        }
+    }
+    return recorrido;
+}
+
+// Aislado significa sin enlaces entrantes ni salientes.
+vector<int> GrafoRed::servidoresAislados() const {
+    map<int, bool> conectado;
+    for (const auto& nodo : adyacencia) conectado[nodo.first] = false;
+    for (const auto& nodo : adyacencia) {
+        if (!nodo.second.empty()) conectado[nodo.first] = true;
+        for (const Arista& arista : nodo.second) {
+            auto destino = conectado.find(arista.destinoId);
+            if (destino != conectado.end()) destino->second = true;
+        }
+    }
+    vector<int> aislados;
+    for (const auto& nodo : conectado)
+        if (!nodo.second) aislados.push_back(nodo.first);
+    return aislados;
+}
+
+// Revisa enlaces mal formados aun cuando la API normal los rechaza.
+vector<string> GrafoRed::validarConexiones() const {
+    vector<string> problemas;
+    for (const auto& nodo : adyacencia) {
+        set<int> destinos;
+        for (const Arista& arista : nodo.second) {
+            if (!existeServidor(arista.destinoId))
+                problemas.push_back("Enlace #" + to_string(nodo.first) +
+                    " -> #" + to_string(arista.destinoId) + " apunta a un servidor inexistente.");
+            if (arista.latencia < 0)
+                problemas.push_back("Enlace #" + to_string(nodo.first) +
+                    " -> #" + to_string(arista.destinoId) + " tiene latencia negativa.");
+            if (!destinos.insert(arista.destinoId).second)
+                problemas.push_back("Enlace duplicado desde el servidor #" + to_string(nodo.first) +
+                    " hacia #" + to_string(arista.destinoId) + ".");
+            if (arista.destinoId == nodo.first)
+                problemas.push_back("El servidor #" + to_string(nodo.first) + " tiene un enlace a si mismo.");
+        }
+    }
+    return problemas;
 }
 
 // Imprime cada servidor con sus conexiones salientes y sus latencias.

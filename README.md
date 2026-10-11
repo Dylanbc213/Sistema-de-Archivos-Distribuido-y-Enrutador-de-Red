@@ -91,6 +91,25 @@ Las rutas siguen formato Unix: `/docs/reportes/archivo.txt`. El separador es
 
 ## Fase 3: Autenticación y tabla hash
 
+### Persistencia de cuentas
+
+Las cuentas se cargan antes de mostrar el menú y se guardan en
+`%LOCALAPPDATA%\NetworkOS\usuarios.db` (por ejemplo,
+`C:\Users\<usuario>\AppData\Local\NetworkOS\usuarios.db`). El archivo conserva
+ID, nombre, rol, servidor asignado, sal aleatoria y derivación PBKDF2-HMAC-SHA256;
+nunca contiene la contraseña en texto plano. El archivo se actualiza mediante
+un temporal y reemplazo atómico. Si la lectura o escritura falla, el alta o
+cambio se rechaza y la cuenta en memoria se revierte para no pisar datos
+previos. Para pruebas o instalaciones aisladas, `Sistema` acepta una ruta de
+almacenamiento explícita en su cuarto argumento.
+
+Las versiones anteriores no persistían las cuentas y no hay contraseñas
+legibles que puedan migrarse de forma segura. Deben registrarse de nuevo si no
+existe un `usuarios.db` previo. El administrador inicial se crea solo cuando
+no hay un ADMIN cargado y se configura con `NETWORK_OS_ADMIN_USER` y
+`NETWORK_OS_ADMIN_PASSWORD`; si ya hay un administrador guardado, se reutilizan
+las cuentas existentes y no se duplica ni reemplaza.
+
 ### Tabla hash (desde cero)
 
 `TablaHashUsuarios` se reescribió desde cero: **NO** usa `std::unordered_map`,
@@ -103,14 +122,32 @@ módulo el número de buckets. Operaciones `insertar`/`buscar`/`eliminar` en
 nodos y el arreglo con `delete`/`delete[]`, **sin fugas**. El factor de carga se
 controla con `rehash()`.
 
+La búsqueda por nombre conserva O(1) promedio. La inserción también comprueba
+unicidad del ID en los buckets existentes, por lo que su costo actual es O(n).
+
 ### Gestión de usuarios y credenciales
 
-`Usuario` almacena: `id`, `nombre` (clave de la tabla hash), `contrasena`
-(texto plano, según el alcance actual), `NivelPermiso` (`NORMAL`/`ADMIN`) y
+`Usuario` almacena: `id`, `nombre` (clave de la tabla hash), sal y derivación
+PBKDF2-HMAC-SHA256 de la contraseña, `NivelPermiso` (`NORMAL`/`ADMIN`) y
 `servidorAsignado` (ID del servidor al que pertenece; `-1` = sin servidor).
-`Sistema::registrarUsuario(...)` inserta en la tabla hash y
+`Sistema::registrarUsuario(...)` requiere una sesión ADMIN y
 `Sistema::iniciarSesion(...)` valida las credenciales en **O(1) promedio**
 (`TablaHashUsuarios::verificarSesion` → lookup hash + `verificarCredenciales`).
+La contraseña usa una sal aleatoria BCrypt y 600 000 iteraciones PBKDF2 mediante
+Windows CNG; el hash se compara en tiempo constante. No se guarda la contraseña
+original ni se muestra su longitud.
+
+No hay credenciales predeterminadas. Antes de ejecutar, configura
+`NETWORK_OS_ADMIN_USER` y `NETWORK_OS_ADMIN_PASSWORD`; `main` provisiona esa
+cuenta con rol ADMIN. La provisión es idempotente dentro de una instancia.
+Por ejemplo, en PowerShell:
+
+```powershell
+$env:NETWORK_OS_ADMIN_USER = 'admin'
+$env:NETWORK_OS_ADMIN_PASSWORD = 'elige-una-clave'
+g++ -std=c++17 -Wall -Wextra -O2 *.cpp -lbcrypt -o NetworkOS.exe
+.\NetworkOS.exe
+```
 
 ### Auditoría transaccional
 
@@ -122,19 +159,36 @@ Formato de la línea: `[AAAA-MM-DD HH:MM:SS] <USUARIO|AUT|ERROR> detalle`.
 
 ### Menú de gestión de usuarios
 
-La opción 2 del menú principal abre `GESTION DE USUARIOS` con: registrar usuario
-(ID, nombre, contraseña, nivel de permiso, servidor opcional), iniciar sesión
-(nombre + contraseña) y mostrar usuarios (volcado bucket a bucket con marcas de
-colisión).
+La opción 2 del menú principal solo permite entrar a un ADMIN autenticado.
+Desde allí puede registrar usuarios, listar cuentas y eliminar usuarios; no
+puede eliminarse la cuenta activa ni quedar el sistema sin administrador.
+El inicio y cierre de sesión se realizan desde la opción 5 del menú principal.
 
 ---
+
+En la interfaz, las funciones de archivos, red y auditoría requieren una sesión.
+La opción 5 del menú principal inicia sesión cuando no hay usuario conectado y
+cierra la sesión actual cuando ya existe; el nombre y el rol conectado se
+muestran en el menú. Las funciones de archivos, red y auditoría requieren
+cualquier sesión. Los roles no restringen esas tres áreas.
+
+Los usuarios se conservan en `usuarios.db` según la ubicación indicada arriba.
+Los servidores, sus árboles de directorios y el grafo dirigido se guardan en
+`%LOCALAPPDATA%\NetworkOS\sistema.db`. Cada alta, modificación o eliminación
+se persiste atómicamente; si falla la escritura, la operación se revierte y se
+informa el error. El archivo se carga al inicio sin duplicar elementos.
+
+El registro persistente `network_audit_log.txt` y la traza `auditoria.log`
+también se guardan en `%LOCALAPPDATA%\NetworkOS`; ambos conservan eventos entre
+ejecuciones. Estas rutas no dependen del directorio de trabajo. Cerrar sesión
+solo cambia la sesión activa y no limpia los datos del sistema.
 
 ## Compilacion
 
 ### Compilacion manual
 
 ```bash
-g++ -std=c++17 -Wall -Wextra *.cpp -o NetworkOS.exe
+g++ -std=c++17 -Wall -Wextra *.cpp -lbcrypt -o NetworkOS.exe
 ```
 
 ### En VS Code
@@ -152,6 +206,32 @@ Ejecutar el binario y seguir el menu interactivo:
 NetworkOS.exe
 ```
 
+## Pruebas de integración
+
+La suite `tests/PruebasIntegracion.cpp` cubre operaciones normales, errores y
+límites de los árboles de archivos, la tabla hash, el grafo, la auditoría y el
+flujo del menú de diagnóstico. Compílala y ejecútala desde PowerShell:
+
+```powershell
+$testExe = Join-Path $env:TEMP ('NetworkOSIntegrationTests_' + [guid]::NewGuid().ToString('N') + '.exe')
+if (Test-Path -LiteralPath $testExe) { throw 'La ruta temporal ya existe; elija otra' }
+g++ -std=c++17 -Wall -Wextra -O2 -I. tests/PruebasIntegracion.cpp Archivo.cpp Auditoria.cpp Carpeta.cpp ConexionRed.cpp GrafoRed.cpp LoggerAuditoria.cpp Menu.cpp NodoArchivo.cpp Servidor.cpp Sistema.cpp TablaHashUsuarios.cpp Usuario.cpp -lbcrypt -o $testExe
+if ($LASTEXITCODE -ne 0) { throw 'Falló la compilación de las pruebas' }
+& $testExe $env:TEMP
+if ($LASTEXITCODE -ne 0) { throw 'Fallaron las pruebas de integración' }
+Remove-Item -LiteralPath $testExe
+```
+
+Los archivos de auditoría de prueba se crean en el directorio temporal y se
+eliminan al terminar la suite.
+
+Para compilar y ejecutar el flujo real del menú en una carpeta temporal aislada,
+incluyendo un segundo arranque para verificar persistencia:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tests/FlujoE2E.ps1
+```
+
 Menu principal:
 ```
 ================================================
@@ -161,6 +241,8 @@ Menu principal:
   2. Gestion de usuarios
   3. Red y enrutamiento
   4. Auditoria
+  5. Iniciar sesion
+  Sesion: no iniciada
   0. Salir
 ```
 

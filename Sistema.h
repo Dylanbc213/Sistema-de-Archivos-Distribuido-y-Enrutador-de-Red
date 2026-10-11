@@ -48,10 +48,28 @@ private:
     // Auditoría transaccional (volátil + persistente).
     void auditar(const std::string& tipo, const std::string& mensaje);
 
+    // Sesión autenticada de la interfaz y de las operaciones del dominio.
+    std::string usuarioEnSesion;
+    std::string rutaUsuarios;
+    bool almacenamientoUsuariosDisponible;
+    bool cargarUsuarios();
+    bool guardarUsuarios() const;
+    std::string rutaEstado;
+    bool almacenamientoEstadoDisponible;
+    bool cargarEstado();
+    bool cargarEstadoDesdeContenido(const std::string& contenido);
+    std::string serializarEstado() const;
+    bool guardarEstado() const;
+    bool confirmarCambioEstado(const std::string& estadoAnterior);
+
 public:
     Sistema(std::size_t bucketsUsuarios = 16,
             const std::string& rutaAuditoria = "auditoria.log",
-            LoggerAuditoria* logger = nullptr);
+            LoggerAuditoria* logger = nullptr,
+            const std::string& rutaArchivoUsuarios = "",
+            const std::string& rutaArchivoEstado = "");
+
+    static std::string directorioDatosLocal();
 
     void asignarLogger(LoggerAuditoria& log);
 
@@ -87,6 +105,9 @@ public:
                                             const std::string& ruta,
                                             const std::string& contenido);
 
+    bool modificarContenidoArchivo(int servidorId, const std::string& ruta,
+                                   const std::string& contenido);
+
     bool eliminarRecursivo(int servidorId, const std::string& ruta);
 
     void mostrarArbol(int servidorId) const;
@@ -98,8 +119,18 @@ public:
                           const std::string& contrasena,
                           int nivelPermiso = 0);
 
+    bool asegurarAdministradorInicial(int id, const std::string& nombre,
+                                      const std::string& contrasena);
+    bool eliminarUsuario(const std::string& nombre);
+    bool asignarServidorUsuario(const std::string& nombre, int servidorId);
+
     bool iniciarSesion(const std::string& nombre,
                        const std::string& contrasena);
+    void cerrarSesion();
+    bool tieneSesion() const;
+    bool sesionEsAdmin() const;
+    std::string nombreUsuarioEnSesion() const;
+    std::string rolUsuarioEnSesion() const;
 
 
     // -----------------------------------------------------------------
@@ -133,7 +164,7 @@ public:
     // -----------------------------------------------------------------
     // Acceso ás estruturas (para consultas / administración)
     // -----------------------------------------------------------------
-        TablaHashUsuarios& getUsuarios();
+    const TablaHashUsuarios& getUsuarios() const;
     GrafoRed& getGrafo();
     const GrafoRed& getGrafo() const;
         Auditoria& getAuditoria();

@@ -23,6 +23,7 @@
                 "Sistema.cpp",
                 "TablaHashUsuarios.cpp",
                 "Usuario.cpp",
+                "-lbcrypt",
                 "-o",
                 "NetworkOS.exe"
             ],

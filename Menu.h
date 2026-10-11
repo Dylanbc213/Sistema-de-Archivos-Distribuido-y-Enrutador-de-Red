@@ -7,17 +7,9 @@
 // =====================================================================
 // Menu: capa de interacción por consola del Network OS.
 // =====================================================================
-// Separa la lógica de navegación (mostrar menús, leer y validar la
-// entrada del usuario, mantener el programa en ejecución) de las clases
-// del dominio (Sistema, Servidor, Usuario, GrafoRed, Auditoria...).
-//
-// Menu NO es dueña del Sistema ni del logger: recibe referencias a ambos
-// (ya construidos por main) y se limita a ofrecer los puntos de entrada
-// de cada área funcional. Registra en el archivo de auditoría el acceso
-// a las opciones del menú, las entradas inválidas y el cierre del
-// programa. Como las operaciones completas pertenecen a fases
-// posteriores, de momento cada área se limita a mostrar que la
-// funcionalidad aún no está implementada y a regresar al menú principal.
+// Separa la navegación y validación de entrada del dominio. Recibe
+// referencias no propietarias al sistema y al logger, conserva la sesión
+// autenticada durante la ejecución y registra accesos y errores.
 class Menu {
 private:
     // Referencia al sistema sobre el que opera la interfaz. No es
@@ -44,6 +36,7 @@ private:
     // blanco al inicio y al final, y la devuelve. Si la línea está vacía
     // devuelve una cadena vacía.
     std::string leerLinea() const;
+    std::string leerContrasena() const;
 
     // --- Submenús (puntos de entrada de cada área) -----------------
     // Cada uno mantiene su propio ciclo hasta que el usuario elige
@@ -53,10 +46,14 @@ private:
     void menuRedEnrutamiento();
     void menuAuditoria();
 
+    bool autorizarAcceso(const std::string& recurso, bool requiereAdmin = false);
+    bool iniciarSesionInteractiva();
+    void cerrarSesion();
+
     // --- Utilidad --------------------------------------------------
     // Muestra un mensaje indicando que una funcionalidad concreta
     // todavía no está implementada y deja constancia en auditoría.
-    void noImplementado(const std::string& funcionalidad) const;
+    void opcionInvalida(const std::string& submenu);
 
 public:
     // Construye el menú asociado a un Sistema y un logger ya inicializados.

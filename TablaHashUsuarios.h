@@ -5,6 +5,7 @@
 
 #include <cstddef>
 #include <string>
+#include <vector>
 
 // =====================================================================
 // TablaHashUsuarios: tabla hash PROPIA para almacenar usuarios.
@@ -100,6 +101,10 @@ public:
 
     // Indica si existe un usuario con ese nombre.
     bool contiene(const std::string& nombre) const;
+    // Indica si ya existe un usuario con este identificador.
+    bool contieneId(int id) const;
+    std::size_t cantidadAdministradores() const;
+    std::vector<Usuario> obtenerTodos() const;
 
     // Consultas de estado.
     std::size_t tamano() const;                          // usuarios almacenados

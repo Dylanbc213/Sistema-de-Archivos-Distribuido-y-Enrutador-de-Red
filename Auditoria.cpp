@@ -10,7 +10,8 @@ using namespace std;
 // Constructor
 // ---------------------------------------------------------------------
 
-Auditoria::Auditoria(const string& rutaArchivo) : rutaArchivo(rutaArchivo) {}
+Auditoria::Auditoria(const string& rutaArchivo)
+    : rutaArchivo(rutaArchivo), eventosPersistidos(0), rutaPersistida(rutaArchivo) {}
 
 // ---------------------------------------------------------------------
 // Métodos privados
@@ -60,15 +61,22 @@ bool Auditoria::guardar() const { return guardar(rutaArchivo); }
 
 // Vuelca la traza en el archivo indicado (lo sobreescribe).
 bool Auditoria::guardar(const string& ruta) const {
-    ofstream salida(ruta);
+    if (rutaPersistida != ruta) {
+        rutaPersistida = ruta;
+        eventosPersistidos = 0;
+    }
+    ofstream salida(ruta, ios::app);
     if (!salida) {
         cerr << "[Auditoria] No se pudo abrir '" << ruta << "' para escribir.\n";
         return false;
     }
-    for (const auto& evento : eventos) {
+    for (size_t i = eventosPersistidos; i < eventos.size(); ++i) {
+        const auto& evento = eventos[i];
         salida << "[" << evento.marcaTiempo << "] "
                << "<" << evento.tipo << "> " << evento.mensaje << "\n";
     }
+    if (!salida) return false;
+    eventosPersistidos = eventos.size();
     return true;
 }
 
@@ -86,4 +94,4 @@ void Auditoria::mostrar() const {
 }
 
 // Vacía el registro.
-void Auditoria::limpiar() { eventos.clear(); }
+void Auditoria::limpiar() { eventos.clear(); eventosPersistidos = 0; }
