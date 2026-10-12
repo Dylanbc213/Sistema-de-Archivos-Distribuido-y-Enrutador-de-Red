@@ -493,3 +493,224 @@ Al finalizar, indicar:
 - Errores corregidos.
 - Estado final de la Fase 1.
 
+  ## Fase 5. Diagnóstico y auditoría
+
+### Objetivo
+
+Implementar y verificar las funcionalidades de diagnóstico de red y auditoría, reutilizando las estructuras y clases existentes.
+
+### Verificaciones
+
+1. El grafo de red permite recorrer los servidores mediante BFS y DFS.
+2. Los recorridos se realizan sobre el grafo de red, no sobre el árbol de directorios.
+3. Se identifican correctamente los servidores aislados y los problemas de conectividad.
+4. La simulación de ping produce resultados coherentes con las conexiones existentes.
+5. Se detectan correctamente los servidores inaccesibles y las rutas inexistentes.
+6. Los eventos relevantes se registran en el sistema de auditoría.
+7. Los registros incluyen fecha y hora.
+8. Los registros anteriores se conservan al agregar nuevos eventos.
+9. Las funcionalidades de diagnóstico y consulta de auditoría están disponibles desde los menús correspondientes.
+10. Se controlan las entradas inválidas y los errores de ejecución.
+11. Las funcionalidades existentes de archivos, usuarios y enrutamiento continúan funcionando.
+12. No se duplican clases, estructuras de datos ni funcionalidades existentes.
+
+### Restricciones
+
+* Revisar primero las clases `GrafoRed`, `LoggerAuditoria`, los menús y los módulos relacionados.
+* Reutilizar las implementaciones existentes siempre que sea posible.
+* No modificar funcionalidades ajenas al alcance de la Fase 5.
+* No implementar funciones vacías ni resultados simulados que no correspondan al estado real de la red.
+* Compilar utilizando C++17 con advertencias activadas.
+* Ejecutar pruebas de diagnóstico y auditoría cuando el entorno lo permita.
+
+### Entrega
+
+Al finalizar, indicar:
+
+* Archivos modificados.
+* Funcionalidades implementadas.
+* Pruebas realizadas y sus resultados.
+* Errores encontrados y corregidos.
+* Estado final de la Fase 5.
+* Funcionalidades pendientes de verificar.
+
+---
+
+## Fase 6. Integración y pruebas
+
+### Objetivo
+
+Verificar la integración de los módulos del sistema, comprobar su funcionamiento conjunto y corregir errores de integración sin alterar innecesariamente la arquitectura existente.
+
+### Verificaciones
+
+1. Todas las clases `.h` y `.cpp` compilan correctamente.
+2. Los módulos se integran sin duplicación de responsabilidades ni definiciones incompatibles.
+3. El menú principal y los submenús permiten acceder a las funcionalidades y regresar correctamente.
+4. El sistema de archivos permite crear, buscar, visualizar y eliminar archivos y carpetas.
+5. La autenticación, las sesiones y los permisos funcionan según las reglas establecidas.
+6. La tabla hash de usuarios conserva su funcionamiento y maneja correctamente las colisiones.
+7. El grafo permite agregar y eliminar servidores y conexiones.
+8. Dijkstra calcula correctamente las rutas y sus costos.
+9. BFS y DFS recorren correctamente el grafo de red.
+10. La auditoría registra los eventos correspondientes con fecha y hora.
+11. Se controlan las entradas inválidas, las operaciones no permitidas y los casos límite.
+12. Las estructuras de datos permanecen consistentes después de las operaciones de creación y eliminación.
+13. Se verifica la persistencia de los datos que el proyecto tenga implementada, incluyendo la recuperación de servidores, conexiones, archivos y carpetas cuando corresponda.
+14. Se comprueba que cerrar sesión no elimine los datos persistentes.
+15. No existen fallos evidentes de memoria, referencias inválidas ni errores graves de ejecución.
+16. El programa se cierra correctamente.
+
+### Pruebas
+
+* Ejecutar pruebas unitarias de las clases y estructuras de datos cuando estén disponibles.
+* Ejecutar pruebas de integración entre los módulos.
+* Probar flujos completos desde el menú principal.
+* Probar entradas inválidas, elementos inexistentes, servidores desconectados y rutas no disponibles.
+* Probar operaciones consecutivas de creación, consulta y eliminación.
+* Verificar la persistencia mediante el cierre de sesión y el reinicio completo del programa, según las funcionalidades implementadas.
+* Compilar utilizando C++17 con advertencias activadas.
+* Si el entorno lo permite, utilizar sanitizadores para detectar errores de memoria.
+
+### Restricciones
+
+* Inspeccionar el código existente antes de realizar modificaciones.
+* Mantener la arquitectura, las clases y las estructuras de datos actuales.
+* Corregir los errores de integración sin reescribir módulos completos cuando no sea necesario.
+* No eliminar funcionalidades para conseguir que las pruebas pasen.
+* No afirmar que una prueba fue exitosa si no se ejecutó.
+* No considerar una funcionalidad terminada únicamente porque su código existe.
+
+### Entrega
+
+Al finalizar, indicar:
+
+* Archivos modificados.
+* Pruebas unitarias y de integración realizadas.
+* Resultado de la compilación.
+* Errores encontrados y corregidos.
+* Funcionalidades verificadas y funcionalidades pendientes.
+* Estado final de la Fase 6.
+
+---
+
+## Auditoría integral. Verificación de las fases 1 a 7
+
+### Objetivo
+
+Realizar una auditoría completa del proyecto Network OS para comprobar que las siete fases estén correctamente implementadas, que sus funcionalidades sean operativas y que los módulos estén integrados.
+
+### Verificaciones por fase
+
+**Fase 1. Base del sistema**
+
+1. Todas las clases `.h` y `.cpp` compilan.
+2. El servidor inicializa su carpeta raíz.
+3. El árbol utiliza correctamente smart pointers.
+4. La tabla hash propia se inicializa.
+5. El grafo de red se inicializa.
+6. El menú funciona y permite regresar.
+7. Se controlan entradas inválidas.
+8. El archivo `network_audit_log.txt` se crea.
+9. Los eventos se registran con fecha y hora.
+10. Los registros anteriores se conservan.
+11. El programa cierra correctamente.
+12. No existen fugas evidentes de memoria.
+
+**Fase 2. Sistema de directorios**
+
+1. Se crean archivos y carpetas correctamente.
+2. Funcionan las búsquedas por ruta y por nombre.
+3. El árbol de directorios se visualiza correctamente.
+4. La eliminación de archivos y carpetas funciona, incluida la eliminación en cascada.
+5. Las estructuras permanecen consistentes después de las operaciones.
+6. Se controlan las rutas inválidas y los elementos inexistentes.
+
+**Fase 3. Autenticación y tabla hash**
+
+1. El registro y la autenticación funcionan correctamente.
+2. La tabla hash maneja las colisiones.
+3. Se validan las credenciales y los identificadores duplicados.
+4. Las sesiones se inician y cierran correctamente.
+5. Los permisos se aplican según el rol del usuario.
+6. Las operaciones protegidas rechazan accesos no autorizados.
+
+**Fase 4. Red y enrutamiento**
+
+1. Se pueden agregar y eliminar servidores.
+2. Se pueden agregar y eliminar conexiones.
+3. El grafo mantiene su consistencia.
+4. Dijkstra calcula rutas y costos correctamente.
+5. Se manejan servidores aislados y rutas inexistentes.
+6. Los resultados corresponden a la topología real de la red.
+
+**Fase 5. Diagnóstico y auditoría**
+
+1. BFS y DFS recorren correctamente el grafo de red.
+2. Se detectan servidores aislados y problemas de conectividad.
+3. La simulación de ping produce resultados coherentes.
+4. Los eventos se registran con fecha y hora.
+5. Los registros anteriores se conservan.
+6. Los resultados del diagnóstico son accesibles desde los menús.
+
+**Fase 6. Integración y pruebas**
+
+1. Todos los módulos funcionan de manera conjunta.
+2. Se ejecutan pruebas unitarias, de integración y de flujo completo cuando sea posible.
+3. Se validan las entradas inválidas y los casos límite.
+4. Se verifica la consistencia de las estructuras de datos.
+5. Se comprueba la compilación y el funcionamiento general.
+6. Se corrigen los errores reproducibles y se ejecutan nuevamente las pruebas afectadas.
+
+**Fase 7. Git, README y defensa**
+
+1. El repositorio Git está organizado y conserva los cambios existentes.
+2. El README documenta la estructura, las funcionalidades y las instrucciones de compilación y ejecución.
+3. La documentación coincide con el código realmente implementado.
+4. Se documentan los algoritmos y las estructuras de datos utilizados.
+5. Se identifican las limitaciones y funcionalidades pendientes.
+6. El proyecto puede demostrarse mediante un flujo de ejecución reproducible.
+
+### Prueba integral del sistema
+
+Ejecutar un flujo completo que incluya:
+
+1. Inicio del programa.
+2. Autenticación y gestión de permisos.
+3. Creación, búsqueda y eliminación de archivos y carpetas.
+4. Creación y administración de servidores y conexiones.
+5. Cálculo de rutas mediante Dijkstra.
+6. Diagnóstico de conectividad mediante BFS y DFS.
+7. Registro y consulta de auditoría.
+8. Cierre de sesión y verificación de que los datos persistentes se conservan.
+9. Reinicio completo del programa y recuperación de los datos que deban persistir.
+10. Comprobación del funcionamiento general después de las operaciones.
+
+### Restricciones generales
+
+* Revisar primero la estructura completa del repositorio y el estado de Git.
+* Mantener la arquitectura y las funcionalidades existentes.
+* No duplicar clases ni estructuras de datos.
+* No introducir funcionalidades fuera del alcance del proyecto.
+* No modificar módulos que funcionen correctamente sin una razón comprobable.
+* Corregir los errores identificados y ejecutar pruebas de regresión.
+* Compilar utilizando C++17 con advertencias activadas.
+* Si el entorno lo permite, utilizar sanitizadores para detectar errores de memoria.
+* No declarar una fase terminada si sus funcionalidades no se han verificado.
+* Diferenciar entre funcionalidades implementadas, pruebas ejecutadas y resultados comprobados.
+
+### Entrega final
+
+Al finalizar, presentar:
+
+1. Estado de cada una de las siete fases.
+2. Archivos modificados.
+3. Errores encontrados y correcciones realizadas.
+4. Pruebas ejecutadas y resultados reales.
+5. Resultado de la compilación.
+6. Funcionalidades pendientes y limitaciones.
+7. Instrucciones para compilar, ejecutar y demostrar el sistema.
+
+**Criterio de aceptación:** el proyecto debe compilar, ejecutar sus funcionalidades principales e integrar correctamente sus módulos. Toda funcionalidad declarada como correcta debe contar con evidencia de verificación; las que no pudieron probarse deben identificarse expresamente como no verificadas.
+
+
