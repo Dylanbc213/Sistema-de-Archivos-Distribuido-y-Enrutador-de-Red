@@ -357,3 +357,139 @@ persistente (modo append) con eventos de nivel MENU, SISTEMA, USUARIO y AUT
 | `ConexionRed.h/.cpp` | Modelo de conexion de red. |
 | `main.cpp` | Punto de entrada: crea Logger, Sistema y Menu. |
 | `.vscode/tasks.json` | Configuracion de compilacion para VS Code (Ctrl+Shift+B). |
+
+## prompts 
+## 1
+Revisa primero la estructura existente del proyecto y crea las clases base:
+
+- Servidor: ID, nombre y carpeta raíz.
+- NodoArchivo: clase base abstracta.
+- Carpeta: hereda de NodoArchivo y contiene otros nodos.
+- Archivo: hereda de NodoArchivo y almacena contenido.
+- Usuario: ID, nombre y contraseña.
+- ConexionRed: servidor origen, destino y latencia.
+
+Requisitos:
+- Usar POO, encapsulamiento y herencia.
+- Separar declaraciones en .h e implementaciones en .cpp.
+- Utilizar std::string, std::vector y smart pointers cuando corresponda.
+- Evitar punteros propietarios sin gestión automática.
+- Preparar las clases para las próximas fases.
+
+No implementar todavía autenticación, operaciones completas de archivos ni algoritmos de red.
+
+Crear únicamente los archivos necesarios y verificar que el código compile.
+
+Al finalizar, resumir los cambios.
+
+## 2
+
+Usando las clases existentes, inicializa estas estructuras:
+
+1. Árbol de directorios:
+   - Cada servidor debe tener su carpeta raíz.
+   - Utilizar std::unique_ptr para manejar los nodos.
+
+2. Tabla hash de usuarios:
+   - Crear una estructura propia usando std::vector.
+   - Preparar buckets para manejar colisiones.
+   - No usar std::unordered_map para la tabla principal.
+
+3. Grafo de red:
+   - Utilizar listas de adyacencia.
+   - Representar servidores y conexiones con latencia.
+
+4. Archivo de auditoría:
+   - Preparar la estructura para registrar eventos.
+
+Crear una clase central que inicialice y administre estas estructuras.
+
+No implementar todavía búsqueda recursiva, autenticación, Dijkstra ni BFS/DFS.
+
+Mantener los archivos .h y .cpp organizados.
+Verificar compilación sin modificar código innecesario.
+
+## 3 
+
+Implementa un menú principal por consola:
+
+1. Gestión de archivos
+2. Gestión de usuarios
+3. Red y enrutamiento
+4. Auditoría
+0. Salir
+
+Requisitos:
+- Utilizar std::cout y std::cin.
+- Mantener el menú activo mediante un ciclo.
+- Validar entradas inválidas, incluyendo letras.
+- Permitir regresar al menú principal.
+- Crear funciones independientes para cada sección.
+- Mostrar "Funcionalidad pendiente" donde todavía no exista implementación.
+
+Separar el menú en archivos .h y .cpp.
+
+Conectar el menú con la clase central del sistema.
+
+No implementar funcionalidades de las siguientes fases ni agregar bibliotecas externas.
+
+Verificar compilación y funcionamiento.
+
+## 4
+
+Implementa una clase Auditoria para registrar eventos.
+
+Requisitos:
+- Utilizar <fstream> para manejar archivos.
+- Crear network_audit_log.txt automáticamente.
+- Utilizar std::ios::app para conservar registros.
+- Obtener fecha y hora con <chrono> y <ctime>.
+- Registrar eventos mediante un método registrarEvento().
+- Implementar un método mostrarLogs().
+
+Registrar:
+- Inicio del programa.
+- Inicialización de estructuras.
+- Acceso a opciones del menú.
+- Entradas incorrectas.
+- Cierre del programa.
+
+Integrar mostrarLogs() con la opción de auditoría del menú.
+
+Manejar errores de lectura y escritura.
+
+No implementar todavía diagnósticos de red ni modificar otras funcionalidades.
+
+Compilar y comprobar que los registros se guarden correctamente.
+
+## 5 
+
+Verifica:
+
+1. Todas las clases .h y .cpp compilan.
+2. El servidor inicializa su carpeta raíz.
+3. El árbol utiliza correctamente smart pointers.
+4. La tabla hash propia se inicializa.
+5. El grafo de red se inicializa.
+6. El menú funciona y permite regresar.
+7. Se controlan entradas inválidas.
+8. El archivo network_audit_log.txt se crea.
+9. Los eventos se registran con fecha y hora.
+10. Los registros anteriores se conservan.
+11. El programa cierra correctamente.
+12. No existen fugas evidentes de memoria.
+
+Compilar usando C++17 con advertencias activadas.
+
+Si está disponible, utilizar sanitizadores para detectar errores de memoria.
+
+Corregir únicamente errores relacionados con la Fase 1.
+
+No agregar funcionalidades de fases posteriores ni reestructurar código que funciona.
+
+Al finalizar, indicar:
+- Archivos modificados.
+- Pruebas realizadas.
+- Errores corregidos.
+- Estado final de la Fase 1.
+
