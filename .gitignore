@@ -1,0 +1,11 @@
+# Ejecutable
+NetworkOS.exe
+
+# Archivos de auditoria / log (generados en tiempo de ejecucion)
+auditoria.log
+network_audit_log.txt
+
+# Archivos temporales
+*.o
+*.obj
+temp_out.txt
