@@ -662,15 +662,6 @@ Realizar una auditoría completa del proyecto Network OS para comprobar que las 
 5. Se comprueba la compilación y el funcionamiento general.
 6. Se corrigen los errores reproducibles y se ejecutan nuevamente las pruebas afectadas.
 
-**Fase 7. Git, README y defensa**
-
-1. El repositorio Git está organizado y conserva los cambios existentes.
-2. El README documenta la estructura, las funcionalidades y las instrucciones de compilación y ejecución.
-3. La documentación coincide con el código realmente implementado.
-4. Se documentan los algoritmos y las estructuras de datos utilizados.
-5. Se identifican las limitaciones y funcionalidades pendientes.
-6. El proyecto puede demostrarse mediante un flujo de ejecución reproducible.
-
 ### Prueba integral del sistema
 
 Ejecutar un flujo completo que incluya:
